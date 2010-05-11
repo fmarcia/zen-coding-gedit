@@ -77,7 +77,6 @@ class ZenEditor():
             return offset_start, offset_end
         return offset_end, offset_start
 
-
     def create_selection(self, offset_start, offset_end=None):
         """
         Creates selection from <code>start</code> to <code>end</code> character
@@ -130,7 +129,7 @@ class ZenEditor():
         offset_start, offset_end = self.get_current_line_range()
         iter_start = self.buffer.get_iter_at_offset(offset_start)
         iter_end = self.buffer.get_iter_at_offset(offset_end)
-        return self.buffer.get_text(iter_start, iter_end).decode(self.encoding)
+        return self.buffer.get_text(iter_start, iter_end).decode('UTF-8')
 
     def replace_content(self, value, offset_start=None, offset_end=None):
         """
@@ -180,7 +179,7 @@ class ZenEditor():
         """
         iter_start = self.buffer.get_iter_at_offset(0)
         iter_end = self.get_end_iter()
-        return self.buffer.get_text(iter_start, iter_end).decode(self.encoding)
+        return self.buffer.get_text(iter_start, iter_end).decode('UTF-8')
 
     def get_syntax(self):
         """
