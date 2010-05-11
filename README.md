@@ -22,7 +22,7 @@ Installation
 
 1. Download [zip](http://github.com/fmarcia/zen-coding-gedit/zipball/master) or [tar](http://github.com/fmarcia/zen-coding-gedit/tarball/master) source
 2. Unpack it
-3. Run `./zencoding-install.sh`
+3. Run `./install.sh`
 4. In order to use "Update tag image size", install `python-imaging`, if not already done
 5. In Gedit, go to Edit > Preferences > Plugins and enable the plugin
 

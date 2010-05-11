@@ -81,11 +81,11 @@ def get_image_size(editor, img):
 		if not src:
 			return None
 		try:
-			#raw_output = Popen('sips -g pixelWidth -g pixelHeight "%s"' % src, stdout=PIPE, shell=True).communicate()[0]
-			raw_output = Popen('identify "%s"' % src, stdout=PIPE, shell=True).communicate()[0]
+		    import Image
+		    image = Image.open(src)
 			return {
-				'width': re.search(r'([\d]+)x[\d]+', raw_output).group(1),
-				'height': re.search(r'[\d]+x([\d]+)', raw_output).group(1)
+				'width': repr(image.size[0]),
+				'height': repr(image.size[1])
 			}
 		except:
 			pass
