@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Zen Coding installation
+# Zen Coding for GEdit installation
 #
 
 sudo cp zencoding.png /usr/share/icons/hicolor/16x16/apps
