@@ -21,7 +21,7 @@ Changes for Gedit Plugin
 @link http://github.com/fmarcia/zen-coding-gedit
 '''
 
-import zen_core, zen_actions
+import zen_core, zen_actions, zen_file
 import os, re, locale
 from image_size import update_image_size
 import zen_dialog
@@ -200,6 +200,37 @@ class ZenEditor():
         """
         return 'xhtml'
 
+    def prompt(self, title):
+        """
+        Ask user to enter something
+        @param {String} Dialog title
+        @return {String} Entered data
+        @since 0.65
+        """
+        done, result = zen_dialog.main(self, window, None, '')
+        if done:
+            return result
+        return ''
+
+    def getSelection(self):
+        """
+        Returns current selection
+        @return {String}
+        @since 0.65
+        """
+        offset_start, offset_end = self.get_selection_range()
+        iter_start = self.buffer.get_iter_at_offset(offset_start)
+        iter_end = self.buffer.get_iter_at_offset(offset_end)
+        return self.buffer.get_text(iter_start, iter_end).decode('UTF-8')
+
+    def getFilePath(self):
+        """
+        Returns current editor's file path
+        @return {String}
+        @since 0.65 
+        """
+        return self.document.get_uri()
+
     #---------------------------------------------------------------------------------------
 
     def get_insert_iter(self):
@@ -219,6 +250,8 @@ class ZenEditor():
 
     def get_end_offset(self):
         return self.get_end_iter().get_offset()
+
+    #---------------------------------------------------------------------------------------
         
     def start_edit(self):
         # bug when the cursor is at the very beginning

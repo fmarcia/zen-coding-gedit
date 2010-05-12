@@ -9,7 +9,7 @@ This plugin fully integrates [Zen Coding](http://code.google.com/p/zen-coding/) 
 - Balance tag inward or outward
 - Merge lines
 - Go to previous or next edit point
-- Update tag image size (needs `python-imaging`, see installation)
+- Update tag image size
 - Remove tag
 - Split or join tags
 - Toggle comment
@@ -23,8 +23,7 @@ Installation
 1. Download [zip](http://github.com/fmarcia/zen-coding-gedit/zipball/master) or [tar](http://github.com/fmarcia/zen-coding-gedit/tarball/master) source
 2. Unpack it
 3. Run `./install.sh`
-4. In order to use "Update tag image size", install `python-imaging`, if not already done
-5. In Gedit, go to Edit > Preferences > Plugins and enable the plugin
+4. In Gedit, go to Edit > Preferences > Plugins and enable the plugin
 
 Credits
 -------

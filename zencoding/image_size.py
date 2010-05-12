@@ -12,6 +12,7 @@ from subprocess import Popen, PIPE
 import urllib
 import os
 import re
+import zen_file, zen_core
 
 def replace_or_append(img_tag, attr_name, attr_value):
     """
@@ -81,12 +82,8 @@ def get_image_size(editor, img):
         if not src:
             return None
         try:
-            import Image
-            image = Image.open(src)
-            return {
-                'width': repr(image.size[0]),
-                'height': repr(image.size[1])
-            }
+            content = zen_file.read(src)
+            return zen_core.get_image_size(content)
         except:
             pass
         

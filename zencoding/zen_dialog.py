@@ -54,7 +54,8 @@ class ZenDialog():
             widget.quit()
         elif event.keyval == 65307: # Escape
             widget.exit = False
-            widget.done = widget.callback(widget.done, '')
+            if widget.callback:
+                widget.done = widget.callback(widget.done, '')
             widget.quit()
         else:
             return False
@@ -65,7 +66,8 @@ class ZenDialog():
 
     def update(self, entry):
         self.abbreviation = self.entry.get_text()
-        self.done = self.callback(self.done, self.abbreviation)
+        if self.callback:
+            self.done = self.callback(self.done, self.abbreviation)
 
     def quit(self, widget=None, event=None):
         self.window.hide()
