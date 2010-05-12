@@ -98,5 +98,8 @@ def main(editor, window, callback, text=""):
     editor.view.set_cursor_visible(True)
 
     # return exit status and abbreviation
-    return my_zen_dialog.done and my_zen_dialog.exit, my_zen_dialog.abbreviation
+    if callback:
+        return my_zen_dialog.done and my_zen_dialog.exit, my_zen_dialog.abbreviation
+    else:
+        return my_zen_dialog.exit, my_zen_dialog.abbreviation
 

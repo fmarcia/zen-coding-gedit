@@ -66,9 +66,13 @@ def save(file, content):
 	@param content: File content
 	@type content: str
 	"""
-	fp = open(file, 'wb')
-	fp.write(content)
-	fp.close()
+	try:
+	    fp = open(file, 'wb')
+	    fp.write(content)
+	    fp.close()
+	    return True
+	except:
+		return False
 
 def get_ext(file):
 	"""

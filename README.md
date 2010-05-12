@@ -10,6 +10,7 @@ This plugin fully integrates [Zen Coding](http://code.google.com/p/zen-coding/) 
 - Merge lines
 - Go to previous or next edit point
 - Update tag image size
+- Toggle between image url and data
 - Remove tag
 - Split or join tags
 - Toggle comment

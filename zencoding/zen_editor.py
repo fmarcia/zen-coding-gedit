@@ -165,6 +165,7 @@ class ZenEditor():
             iter_end = self.buffer.get_iter_at_offset(offset_end)
 
         self.buffer.delete(iter_start, iter_end)
+        self.set_caret_pos(offset_start)
         self.insertion_start = self.get_insert_offset()
         
         padding = zen_actions.get_current_line_padding(self)
@@ -207,12 +208,12 @@ class ZenEditor():
         @return {String} Entered data
         @since 0.65
         """
-        done, result = zen_dialog.main(self, window, None, '')
+        done, result = zen_dialog.main(self, self.context, None, title)
         if done:
             return result
         return ''
 
-    def getSelection(self):
+    def get_selection(self):
         """
         Returns current selection
         @return {String}
@@ -223,13 +224,13 @@ class ZenEditor():
         iter_end = self.buffer.get_iter_at_offset(offset_end)
         return self.buffer.get_text(iter_start, iter_end).decode('UTF-8')
 
-    def getFilePath(self):
+    def get_file_path(self):
         """
         Returns current editor's file path
         @return {String}
         @since 0.65 
         """
-        return self.document.get_uri()
+        return re.sub('^file://', '', self.document.get_uri())
 
     #---------------------------------------------------------------------------------------
 
@@ -368,6 +369,14 @@ class ZenEditor():
         self.buffer.begin_user_action()
         update_image_size(self)
         self.buffer.end_user_action()
+
+    def encode_decode_base64(self, window):
+        self.set_context(window)
+        self.buffer.begin_user_action()
+        zen_actions.encode_decode_base64(self)
+        self.buffer.end_user_action()
+
+    #---------------------------------------------------------------------------------------
 
     def remove_tag(self, window):
         self.set_context(window)
