@@ -45,13 +45,14 @@ class ZenEditor():
         self.document = context.get_active_document()
         
         default_locale = locale.getdefaultlocale()[0]
-        lang = re.sub(r'_[^_]+$', '', default_locale)
-        if lang != default_locale:
-            zen_core.set_variable('lang', lang)
-            zen_core.set_variable('locale', default_locale.replace('_', '-'))
-        else:
-            zen_core.set_variable('lang', default_locale)
-            zen_core.set_variable('locale', default_locale)
+        if default_locale:
+            lang = re.sub(r'_[^_]+$', '', default_locale)
+            if lang != default_locale:
+                zen_core.set_variable('lang', lang)
+                zen_core.set_variable('locale', default_locale.replace('_', '-'))
+            else:
+                zen_core.set_variable('lang', default_locale)
+                zen_core.set_variable('locale', default_locale)
         
         self.encoding = self.document.get_encoding().get_charset()
         zen_core.set_variable('charset', self.encoding)
