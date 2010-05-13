@@ -67,12 +67,15 @@ def save(file, content):
 	@type content: str
 	"""
 	try:
-	    fp = open(file, 'wb')
-	    fp.write(content)
-	    fp.close()
-	    return True
+		fp = open(file, 'wb')
 	except:
-		return False
+		fdirs, fname = os.path.split(file)
+		if fdirs:
+			os.makedirs(fdirs)
+		fp = open(file, 'wb')
+		
+	fp.write(content)
+	fp.close()
 
 def get_ext(file):
 	"""

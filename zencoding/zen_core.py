@@ -234,7 +234,7 @@ def get_elements_collection(resource, type):
 	else:
 		return {}
 	
-def replace_variables(text):
+def replace_variables(text): # (FM) allow dynamic variables
 	"""
 	Replace variables like ${var} in string
 	@param text: str
@@ -264,7 +264,7 @@ def get_snippet(res_type, snippet_name):
 	"""
 	return get_settings_resource(res_type, snippet_name, 'snippets');
 
-def get_variable(name):
+def get_variable(name): # (FM) allow dynamic variables
 	"""
 	Returns variable value
 	 @return: str
@@ -1018,7 +1018,7 @@ def get_profile(name):
 	"""
 	return profiles[name] if name in profiles else profiles['plain']
 
-def get_image_size(stream):
+def get_image_size(stream): # (FM) less code when called
 	"""
 	Gets image size from image byte stream.
 	@author http://romeda.org/rePublish/
@@ -1314,6 +1314,16 @@ class ZenNode(object):
 		"@return {String}"
 		content = ''.join([item.to_string() for item in self.children])
 		return self.start + self.content + content + self.end
+		
+class ZenError(Exception):
+	"""
+	Zen Coding specific error
+	@since: 0.65
+	"""
+	def __init__(self, value):
+		self.value = value
+	def __str__(self):
+		return repr(self.value)
 		
 # create default profiles
 setup_profile('xhtml');

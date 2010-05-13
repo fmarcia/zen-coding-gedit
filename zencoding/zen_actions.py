@@ -9,10 +9,20 @@ This layer describes all available Zen Coding actions, like
 @link http://chikuyonok.ru
 """
 from zencoding import zen_core as zen_coding
-from zencoding import html_matcher
-import re, base64
-from zen_core import char_at
-import zen_file
+from zencoding import html_matcher, zen_file
+from zen_core import char_at, ZenError
+import re
+import base64
+
+mime_types = {
+	'gif': 'image/gif',
+	'png': 'image/png',
+	'jpg': 'image/jpeg',
+	'jpeg': 'image/jpeg',
+	'svg': 'image/svg+xml',
+	'html': 'text/html',
+	'htm': 'text/html'
+}
 
 def find_abbreviation(editor):
 	"""
@@ -649,34 +659,34 @@ def remove_tag(editor):
 def encode_decode_base64(editor):
 	"""
 	Encodes/decodes image under cursor to/from base64
-	@param {zen_editor} editor
-	@since 0.65
+	@type editor: ZenEditor
+	@since: 0.65
 	"""
 	data = editor.get_selection()
-	caret_pos, not_used = editor.get_selection_range()
+	caret_pos, not_used = editor.get_selection_range() # (FM) caret_pos must point to the start of the selection
 
 	if not data:
-		# no selection, try to find image bounds from current caret position
+#		no selection, try to find image bounds from current caret position
 		text = editor.get_content()
+		
 		while caret_pos >= 0:
-			if text.startswith('src=', caret_pos): # found <img src="">
+			if text.startswith('src=', caret_pos): # found <img src="">, (FM) startswith already exists
 				m = re.match(r'^(src=(["\'])?)([^\'"<>\s]+)\1?', text[caret_pos:])
 				if m:
 					data = m.group(3)
 					caret_pos += len(m.group(1))
 				break
-			elif text.startswith('url(', caret_pos): # found CSS url() pattern
+			elif text.startswith('url(', caret_pos): # found CSS url() pattern, (FM) startswith already exists
 				m = re.match(r'^(url\(([\'"])?)([^\'"\)\s]+)\1?/', text[caret_pos:])
 				if m:
 					data = m.group(3)
 					caret_pos += len(m.group(1))
 				break
-			elif text[caret_pos] == '>':
-			    return False
+			
 			caret_pos -= 1
 	
 	if data:
-		if data.startswith('data:'):
+		if data.startswith('data:'): # (FM) startswith already exists
 			return decode_from_base64(editor, data, caret_pos)
 		else:
 			return encode_to_base64(editor, data, caret_pos)
@@ -686,52 +696,48 @@ def encode_decode_base64(editor):
 def encode_to_base64(editor, img_path, pos):
 	"""
 	Encodes image to base64
-	@requires zen_file
-	@param {zen_editor} editor
-	@param {String} img_path Path to image
-	@param {Number} pos Caret position where image is located in the editor
-	@return {Boolean}
+	@requires: zen_file
+	
+	@type editor: ZenEditor
+	@param img_path: Path to image
+	@type img_path: str
+	@param pos: Caret position where image is located in the editor
+	@type pos: int
+	@return: bool
 	"""
-
 	editor_file = editor.get_file_path()
 	default_mime_type = 'application/octet-stream'
 		
-	if not editor_file:
-		raise Exception("You should save your file before using this action")
+	if editor_file is None:
+		raise ZenError("You should save your file before using this action")
+	
 	
 	# locate real image path
 	real_img_path = zen_file.locate_file(editor_file, img_path)
-	if not real_img_path:
-		raise Exception("Can't find " + img_path + ' file')
+	if real_img_path is None:
+		raise ZenError("Can't find %s file" % img_path)
 	
 	b64 = base64.b64encode(zen_file.read(real_img_path))
 	if not b64:
-		raise Exception("Can't encode file content to base64")
+		raise ZenError("Can't encode file content to base64")
 	
-	mime_types = {
-		'gif': 'image/gif',
-		'png': 'image/png',
-		'jpg': 'image/jpeg',
-		'jpeg': 'image/jpeg',
-		'svg': 'image/svg+xml',
-		'html': 'text/html',
-		'htm': 'text/html'
-	}
-
-	ext = zen_file.get_ext(real_img_path)
-	b64 = 'data:' + (ext if ext in mime_types else default_mime_type) + ';base64,' + b64
-
-	editor.replace_content(b64, pos, pos + len(img_path))
+	
+	b64 = 'data:' + (mime_types[zen_file.get_ext(real_img_path)] or default_mime_type) + ';base64,' + b64
+	
+	editor.replace_content(b64, pos, pos + len(img_path)) # (FM) $0 isn't used in gedit
 	return True
 
 def decode_from_base64(editor, data, pos):
 	"""
 	Decodes base64 string back to file.
-	@requires zen_editor.prompt
-	@requires zen_file
-	@param {zen_editor} editor
-	@param {String} data Base64-encoded file content
-	@param {Number} pos Caret position where image is located in the editor
+	@requires: zen_editor.prompt
+	@requires: zen_file
+	 
+	@type editor: ZenEditor
+	@param data: Base64-encoded file content
+	@type data: str
+	@param pos: Caret position where image is located in the editor
+	@type pos: int
 	"""
 	# ask user to enter path to file
 	file_path = editor.prompt('Enter path to file (absolute or relative)')
@@ -740,10 +746,9 @@ def decode_from_base64(editor, data, pos):
 		
 	abs_path = zen_file.create_path(editor.get_file_path(), file_path)
 	if not abs_path:
-		raise Exception("Can't save file")
+		raise ZenError("Can't save file")
 	
-	if zen_file.save(abs_path, base64.b64decode(re.sub(r'^data\:.+?;.+?,', '', data))):
-		editor.replace_content(file_path, pos, pos + len(data))
-		return True
-		
-	return False
+	
+	zen_file.save(abs_path, base64.b64decode( re.sub(r'^data\:.+?;.+?,', '', data) ))
+	editor.replace_content(file_path, pos, pos + len(data)) # (FM) $0 isn't used in gedit
+	return True

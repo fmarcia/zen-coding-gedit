@@ -205,9 +205,10 @@ class ZenEditor():
     def prompt(self, title):
         """
         Ask user to enter something
-        @param {String} Dialog title
-        @return {String} Entered data
-        @since 0.65
+        @param title: Dialog title
+        @type title: str
+        @return: Entered data
+        @since: 0.65
         """
         done, result = zen_dialog.main(self, self.context, None, title)
         if done:
@@ -217,8 +218,8 @@ class ZenEditor():
     def get_selection(self):
         """
         Returns current selection
-        @return {String}
-        @since 0.65
+        @return: str
+        @since: 0.65
         """
         offset_start, offset_end = self.get_selection_range()
         iter_start = self.buffer.get_iter_at_offset(offset_start)
@@ -228,8 +229,8 @@ class ZenEditor():
     def get_file_path(self):
         """
         Returns current editor's file path
-        @return {String}
-        @since 0.65 
+        @return: str
+        @since: 0.65 
         """
         return re.sub('^file://', '', self.document.get_uri())
 
