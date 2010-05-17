@@ -25,6 +25,7 @@ import zen_core, zen_actions, zen_file
 import os, re, locale
 from image_size import update_image_size
 import zen_dialog
+from html_navigation import HtmlNavigation
 
 class ZenEditor():
 
@@ -32,6 +33,7 @@ class ZenEditor():
         self.last_wrap = ''
         self.last_expand = ''
         zen_core.set_caret_placeholder('')
+        self.html_navigation = None
 
     def set_context(self, context):
         """
@@ -40,8 +42,8 @@ class ZenEditor():
         @param context: context object
         """
         self.context = context # window
-        self.buffer = self.context.get_active_view().get_buffer()
         self.view = context.get_active_view()
+        self.buffer = self.view.get_buffer()
         self.document = context.get_active_document()
         
         default_locale = locale.getdefaultlocale()[0]
@@ -347,6 +349,53 @@ class ZenEditor():
         result = zen_actions.merge_lines(self)
         self.buffer.end_user_action()
         return result
+
+    #---------------------------------------------------------------------------------------
+    
+    def prepare_nav(self, window):
+        self.set_context(window)
+        offset_start, offset_end = self.get_selection_range()
+        content = self.get_content()
+        if not self.html_navigation:
+            self.html_navigation = HtmlNavigation(content)
+        return offset_start, offset_end, content
+
+    def new_node(self, window, direction):
+
+        offset_start, offset_end, content = self.prepare_nav(window)
+
+        while True:
+
+            if direction == 'next':
+                node = self.html_navigation.next(offset_start, offset_end, content)
+
+            else:
+                node = self.html_navigation.previous(offset_start, offset_end, content)
+
+            if node:
+
+                iter_start = self.buffer.get_iter_at_offset(node.start)
+                iter_end = self.buffer.get_iter_at_offset(node.end)
+
+                found = self.buffer.get_text(iter_start, iter_end).decode('UTF-8')
+                if found.isspace() and found.find('\n') != -1:
+                    offset_start = node.start
+                    offset_end = node.end
+
+                else:
+                    self.create_selection(node.start, node.end)
+                    break
+
+            else:
+                break
+
+        self.show_caret()
+
+    def prev_node(self, window):
+        self.new_node(window, 'previous')
+
+    def next_node(self, window):
+        self.new_node(window, 'next')
 
     #---------------------------------------------------------------------------------------
 

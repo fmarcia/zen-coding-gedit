@@ -40,6 +40,9 @@ zencoding_ui_str = """
           <menuitem name="ZenCodingOutward"  action="ZenCodingOutwardAction"/>
           <menuitem name="ZenCodingMerge"    action="ZenCodingMergeAction"/>
           <separator/>
+          <menuitem name="ZenCodingPNode"    action="ZenCodingPNodeAction"/>
+          <menuitem name="ZenCodingNNode"    action="ZenCodingNNodeAction"/>
+          <separator/>
           <menuitem name="ZenCodingPrev"     action="ZenCodingPrevAction"/>
           <menuitem name="ZenCodingNext"     action="ZenCodingNextAction"/>
           <separator/>
@@ -63,21 +66,23 @@ class ZenCodingPlugin(gedit.Plugin):
 
     def activate(self, window):
         actions = [
-          ('ZenCodingMenuAction',     None, '_Zen Coding',                   None,            "Zen Coding tools",                            None),
-          ('ZenCodingExpandAction',   None, '_Expand abbreviation',          '<Ctrl>E',        "Expand abbreviation to raw HTML/CSS",         self.expand_abbreviation),
-          ('ZenCodingExpandWAction',  None, 'E_xpand with abbreviation...',  '<Ctrl><Alt>E',   "Type in an abbreviation to expand",           self.expand_with_abbreviation),
-          ('ZenCodingWrapAction',     None, '_Wrap with abbreviation...',    '<Ctrl><Shift>E', "Wrap with code expanded from abbreviation",   self.wrap_with_abbreviation),
-          ('ZenCodingInwardAction',   None, 'Balance tag _inward',           '<Ctrl><Alt>I',   "Select inner tag's content",                  self.match_pair_inward),
-          ('ZenCodingOutwardAction',  None, 'Balance tag _outward',          '<Ctrl><Alt>O',   "Select outer tag's content",                  self.match_pair_outward),
-          ('ZenCodingMergeAction',    None, '_Merge lines',                  '<Ctrl><Alt>M',   "Merge all lines of the current selection",    self.merge_lines),
-          ('ZenCodingPrevAction',     None, '_Previous edit point',          '<Alt>Left',      "Place the cursor at the previous edit point", self.prev_edit_point),
-          ('ZenCodingNextAction',     None, '_Next edit point',              '<Alt>Right',     "Place the cursor at the next edit point",     self.next_edit_point),
-          ('ZenCodingSizeAction',     None, 'Update image _size',            '<Ctrl><Alt>S',   "Update image size tag from file",             self.update_image_size),
-          ('ZenCodingDataAction',     None, 'Toggle image url/da_ta',        '<Ctrl><Alt>A',   "Toggle between image url and data",           self.encode_decode_base64),
-          ('ZenCodingRemoveAction',   None, '_Remove tag',                   '<Ctrl><Alt>R',   "Remove a tag",                                self.remove_tag),
-          ('ZenCodingSplitAction',    None, 'Split or _join tag',            '<Ctrl><Alt>J',   "Toggle between single and double tag",        self.split_join_tag),
-          ('ZenCodingCommentAction',  None, 'Toggle _comment',               '<Ctrl><Alt>C',   "Toggle an XML or HTML comment",               self.toggle_comment),
-          ('ZenCodingSettingsAction', None, 'E_dit settings...',             None,            "Customize snippets and abbreviations",        self.edit_settings)
+          ('ZenCodingMenuAction',     None, '_Zen Coding',                   None,               "Zen Coding tools",                            None),
+          ('ZenCodingExpandAction',   None, '_Expand abbreviation',          '<Ctrl>E',           "Expand abbreviation to raw HTML/CSS",         self.expand_abbreviation),
+          ('ZenCodingExpandWAction',  None, 'E_xpand with abbreviation...',  '<Ctrl><Alt>E',      "Type in an abbreviation to expand",           self.expand_with_abbreviation),
+          ('ZenCodingWrapAction',     None, '_Wrap with abbreviation...',    '<Ctrl><Shift>E',    "Wrap with code expanded from abbreviation",   self.wrap_with_abbreviation),
+          ('ZenCodingInwardAction',   None, 'Balance tag _inward',           '<Ctrl><Alt>I',      "Select inner tag's content",                  self.match_pair_inward),
+          ('ZenCodingOutwardAction',  None, 'Balance tag _outward',          '<Ctrl><Alt>O',      "Select outer tag's content",                  self.match_pair_outward),
+          ('ZenCodingMergeAction',    None, '_Merge lines',                  '<Ctrl><Alt>M',      "Merge all lines of the current selection",    self.merge_lines),
+          ('ZenCodingPNodeAction',    None, '_Previous node',                '<Shift><Alt>Left',  "Select the previous node in HTML code",       self.prev_node),
+          ('ZenCodingNNodeAction',    None, '_Next node',                    '<Shift><Alt>Right', "Select the next node in HTML code",           self.next_node),
+          ('ZenCodingPrevAction',     None, '_Previous edit point',          '<Alt>Left',         "Place the cursor at the previous edit point", self.prev_edit_point),
+          ('ZenCodingNextAction',     None, '_Next edit point',              '<Alt>Right',        "Place the cursor at the next edit point",     self.next_edit_point),
+          ('ZenCodingSizeAction',     None, 'Update image _size',            '<Ctrl><Alt>S',      "Update image size tag from file",             self.update_image_size),
+          ('ZenCodingDataAction',     None, 'Toggle image url/da_ta',        '<Ctrl><Alt>A',      "Toggle between image url and data",           self.encode_decode_base64),
+          ('ZenCodingRemoveAction',   None, '_Remove tag',                   '<Ctrl><Alt>R',      "Remove a tag",                                self.remove_tag),
+          ('ZenCodingSplitAction',    None, 'Split or _join tag',            '<Ctrl><Alt>J',      "Toggle between single and double tag",        self.split_join_tag),
+          ('ZenCodingCommentAction',  None, 'Toggle _comment',               '<Ctrl><Alt>C',      "Toggle an XML or HTML comment",               self.toggle_comment),
+          ('ZenCodingSettingsAction', None, 'E_dit settings...',             None,               "Customize snippets and abbreviations",        self.edit_settings)
         ]
         windowdata = dict()
         window.set_data("ZenCodingPluginDataKey", windowdata)
@@ -97,7 +102,6 @@ class ZenCodingPlugin(gedit.Plugin):
             md.format_secondary_text(message.format(error['msg'], error['lineno'], error['offset']))
             md.run()
             md.destroy()
-
 
     def deactivate(self, window):
         windowdata = window.get_data("ZenCodingPluginDataKey")
@@ -127,6 +131,12 @@ class ZenCodingPlugin(gedit.Plugin):
 
     def merge_lines(self, action, window):
         self.editor.merge_lines(window)
+
+    def prev_node(self, action, window):
+        self.editor.prev_node(window)
+
+    def next_node(self, action, window):
+        self.editor.next_node(window)
 
     def prev_edit_point(self, action, window):
         self.editor.prev_edit_point(window)
