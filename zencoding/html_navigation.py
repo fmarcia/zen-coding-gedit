@@ -26,6 +26,10 @@ import re
 
 class Node ():
 
+	tag_types = ['tag', 'empty-tag', 'question-tag', 'exclam-tag', 'comment', 'cdata']
+	data_types = [ 'data', 'value' ]
+	other_types = [ 'root', 'attribute' ]
+
 	def __init__(self, type, name = '', start = 0, end = 0, parent = None):
 		self.type = type
 		self.name = name
@@ -50,9 +54,18 @@ class Node ():
 			return self.children[0]
 		return None
 
-	def last_child(self):
+	def first_child_data(self):
 		if len(self.children) > 0:
-			return self.children[-1]
+			for child in self.children:
+				if child.type == 'data':
+					return child
+		return None
+
+	def first_child_tag(self):
+		if len(self.children) > 0:
+			for child in self.children:
+				if child.type in Node.tag_types:
+					return child
 		return None
 
 	def next_sibling(self):
@@ -63,6 +76,29 @@ class Node ():
 				return siblings[index + 1]
 		return None
 
+	def next_sibling_tag(self):
+		if self.parent:
+			siblings = self.parent.children
+			index = siblings.index(self)
+			while index < len(siblings) - 1:
+				index += 1
+				if siblings[index].type in Node.tag_types:
+					return siblings[index]
+		return None
+
+	def last_child(self):
+		if len(self.children) > 0:
+			return self.children[-1]
+		return None
+
+	def last_child_tag(self):
+		index = len(self.children)
+		while index > 0:
+			index -= 1
+			if self.children[index].type in Node.tag_types:
+				return self.children[index]
+		return None
+
 	def previous_sibling(self):
 		if self.parent:
 			siblings = self.parent.children
@@ -70,6 +106,69 @@ class Node ():
 			if index > 0:
 				return siblings[index - 1]
 		return None
+
+	def previous_sibling_tag(self):
+		if self.parent:
+			siblings = self.parent.children
+			index = siblings.index(self)
+			while index > 0:
+				index -= 1
+				if siblings[index].type in Node.tag_types:
+					return siblings[index]
+		return None
+
+	def parent_tag(self):
+		test = self
+		while True:
+			test = test.parent
+			if test and test.type in Node.tag_types:
+				return test
+		return None
+
+	def inner_bounds(self, offset_start, offset_end):
+
+		if self.type in ['data', 'attribute'] and self.parent:
+			return self.parent.inner_bounds(offset_start, offset_end)
+
+		elif self.type == 'value' and self.parent and self.parent.parent:
+			return self.parent.parent.inner_bounds(offset_start, offset_end)
+
+		elif self.type in ['empty-tag', 'question-tag', 'exclam-tag', 'comment', 'cdata']:
+			return self.start, self.end
+
+		elif self.type in ['root', 'tag'] and self.children:
+			node_start = self.first_child_data()
+			node_end = self.last_child()
+			if node_start and node_end:
+				if node_start.start == offset_start and node_end.end == offset_end:
+					first_tag = self.first_child_tag()
+					if first_tag:
+						return first_tag.start, first_tag.end
+				return node_start.start, node_end.end
+
+		return None, None
+
+	def outer_bounds(self, offset_start, offset_end):
+
+		if self.type in ['root', 'tag', 'empty-tag', 'question-tag', 'exclam-tag', 'comment', 'cdata']:
+
+			if offset_start == self.start and offset_end == self.end and self.parent:
+				start, end = self.parent.inner_bounds(offset_start, offset_end)
+
+				if start == offset_start and end == offset_end:
+					return self.parent.outer_bounds(offset_start, offset_end)
+				else:
+					return start, end
+
+			return self.start, self.end
+
+		elif self.type in ['data', 'attribute'] and self.parent:
+			return self.parent.outer_bounds(offset_start, offset_end)
+
+		elif self.type == 'value' and self.parent and self.parent.parent:
+			return self.parent.parent.outer_bounds(offset_start, offset_end)
+
+		return None, None
 
 	def show(self, level = 0):
 		children = ''
@@ -108,7 +207,7 @@ class HtmlNavigation():
 			return None
 
 		root = Node('root')
-		node = root.append('text')
+		node = root.append('data')
 		offset = 0
 		end = 0
 		token = ''
@@ -123,7 +222,7 @@ class HtmlNavigation():
 			end = offset + len(token)
 
 			if token == '<!--':
-				if node.type == 'text':
+				if node.type == 'data':
 					node.end = offset
 					node = node.parent
 					node = node.append('comment', offset)
@@ -131,10 +230,10 @@ class HtmlNavigation():
 			elif token == '-->':
 				if node.type == 'comment':
 					node.end = end
-					node = node.parent.append('text', end)
+					node = node.parent.append('data', end)
 
 			elif token == '<![CDATA[':
-				if node.type == 'text':
+				if node.type == 'data':
 					node.end = offset
 					node = node.parent
 					node = node.append('cdata', offset)
@@ -142,11 +241,11 @@ class HtmlNavigation():
 			elif token == ']]>':
 				if node.type == 'cdata':
 					node.end = end
-					node = node.parent.append('text', end)
+					node = node.parent.append('data', end)
 
 			elif token == '<?':
 				if node.type != 'question--tag':
-					if node.type == 'text':
+					if node.type == 'data':
 						node.end = offset
 						node = node.parent
 					node = node.append('question-tag', offset)
@@ -155,19 +254,19 @@ class HtmlNavigation():
 				if node.type == 'question-tag':
 					node.end = end
 					previous_sibling = node.previous_sibling()
-					if previous_sibling and previous_sibling.type == 'text':
-						node = node.parent.append('text', end)
+					if previous_sibling and previous_sibling.type == 'data':
+						node = node.parent.append('data', end)
 					else:
 						node = node.parent
 
 			elif token == '<!':
-				if node.type == 'text':
+				if node.type == 'data':
 					node.end = offset
 					node = node.parent.append('exclam-tag', offset)
 
 			elif token.startswith('</'):
 
-				if node.type == 'text':
+				if node.type == 'data':
 
 					node.end = offset
 
@@ -179,7 +278,7 @@ class HtmlNavigation():
 						if node.type == 'tag':
 							if node.name == name:
 								node.end = end
-								node = node.parent.append('text', end)
+								node = node.parent.append('data', end)
 								break
 							else:
 								node.end = end
@@ -192,20 +291,23 @@ class HtmlNavigation():
 
 			elif token.startswith('<'):
 				name = token[1:].rstrip().lower()
-				if node.type == 'text' and name:
+				if node.type == 'data' and name:
 					node.end = offset
 					node = node.parent.append('start-tag', offset, 0, name)
 
 			elif token == '/>':
-				if node.type == 'start-tag':
+				if node.type in ['start-tag', 'attribute']:
+					if node.type == 'attribute':
+						node.end = offset
+						node = node.parent
 					node.type = 'empty-tag'
 					node.end = end
-					node = node.parent.append('text', end)
+					node = node.parent.append('data', end)
 
 			elif token == '>':
 				if node.type == 'exclam-tag':
 					node.end = end
-					node = node.parent.append('text', end)
+					node = node.parent.append('data', end)
 				elif node.type in ['start-tag', 'attribute']:
 					if node.type == 'attribute':
 						node.end = offset
@@ -213,16 +315,16 @@ class HtmlNavigation():
 					if node.name in empty_tags:
 						node.type = 'empty-tag'
 						node.end = end
-						node = node.parent.append('text', end)
+						node = node.parent.append('data', end)
 					else:
 						node.type = 'tag'
-						node = node.append('text', end)
-				
+						node = node.append('data', end)
 
 			elif token == '"':
 				if node.type == 'attribute' and previous_token == '=':
-					node = node.append('double_quoted_value', end)
-				elif node.type == 'double_quoted_value':
+					node = node.append('double-quoted-value', end)
+				elif node.type == 'double-quoted-value':
+					node.type = 'value'
 					node.end = offset
 					node = node.parent
 					node.end = end
@@ -230,8 +332,9 @@ class HtmlNavigation():
 
 			elif token == "'":
 				if node.type == 'attribute' and previous_token == '=':
-					node = node.append('single_quoted_value', end)
-				elif node.type == 'single_quoted_value':
+					node = node.append('single-quoted-value', end)
+				elif node.type == 'single-quoted-value':
+					node.type = 'value'
 					node.end = offset
 					node = node.parent
 					node.end = end
@@ -245,7 +348,7 @@ class HtmlNavigation():
 
 				elif node.type == 'attribute':
 					if previous_token == '=' and is_alnum:
-						node.append('not_quoted_value', offset, end)
+						node.append('value', offset, end)
 						node.end = end
 						node = node.parent
 					elif token != '=':
@@ -287,7 +390,7 @@ class HtmlNavigation():
 			self.__init__(content)
 		return self.current(offset_start, offset_end)
 	
-	def previous(self, offset_start, offset_end, content):
+	def previous_node(self, offset_start, offset_end, content):
 
 		result = None
 		current = self._prepare(offset_start, offset_end, content)
@@ -310,9 +413,10 @@ class HtmlNavigation():
 					while test and test.start < offset_start:
 						result = test
 						test = test.last_child()
+
 		return result
 	
-	def next(self, offset_start, offset_end, content):
+	def next_node(self, offset_start, offset_end, content):
 
 		current = self._prepare(offset_start, offset_end, content)
 		if not current:
@@ -334,10 +438,70 @@ class HtmlNavigation():
 		    if test:
 			    return test
 
+	def previous_tag(self, offset_start, offset_end, content):
+	
+		result = None
+		current = self._prepare(offset_start, offset_end, content)
+
+		if current:
+			result = current.previous_sibling_tag()
+
+			if result:
+				test = result.last_child_tag()
+
+				while test:
+					result = test
+					test = test.last_child_tag()
+			else:
+				result = current.parent_tag()
+
+				if result:
+					test = result.last_child_tag()
+
+					while test and test.start < offset_start:
+						result = test
+						test = test.last_child_tag()
+
+		return result
+
+	def next_tag(self, offset_start, offset_end, content):
+
+		current = self._prepare(offset_start, offset_end, content)
+		if not current:
+			return None
+
+		test = current.first_child_tag()
+		if test:
+			return test
+
+		test = current.next_sibling_tag()
+		if test:
+			return test
+
+		while True:
+		    current = current.parent
+		    if not current:
+			    return None
+		    test = current.next_sibling_tag()
+		    if test:
+			    return test
+
+	def inner_bounds(self, offset_start, offset_end, content):
+		current = self._prepare(offset_start, offset_end, content)
+		if current:
+			return current.inner_bounds(offset_start, offset_end)
+		return None, None
+
+	def outer_bounds(self, offset_start, offset_end, content):
+		current = self._prepare(offset_start, offset_end, content)
+		if current:
+			return current.outer_bounds(offset_start, offset_end)
+		return None, None
+
 if __name__ == '__main__':
 
 	content = '''
-<div id="id<?=$var_id?>" <?=$attr?>><
+<div id="id<?=$var_id?>" <?=$attr?>> <
     ><div class="tab media-genre tab-init" id="tab_media" onclick="toggleTab('media');">Mo<b>v<i>i</b>e</i></div>
     <span id="txt_current_date" style="font-weight:bold;font-size:16px;color:#636363;">Monday, May 17th< 2010</span>
     &nbsp;<a class="link" style="cursor: pointer;" onclick="saveGrid();">Start h>ere</a>

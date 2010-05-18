@@ -336,12 +336,16 @@ class ZenEditor():
     #---------------------------------------------------------------------------------------
 
     def match_pair_inward(self, window):
-        self.set_context(window)
-        zen_actions.match_pair_inward(self)
+        offset_start, offset_end, content = self.prepare_nav(window)
+        offset_start, offset_end = self.html_navigation.inner_bounds(offset_start, offset_end, content)
+        if not (offset_start is None or offset_end is None):
+            self.create_selection(offset_start, offset_end)
 
     def match_pair_outward(self, window):
-        self.set_context(window)
-        zen_actions.match_pair_outward(self)
+        offset_start, offset_end, content = self.prepare_nav(window)
+        offset_start, offset_end = self.html_navigation.outer_bounds(offset_start, offset_end, content)
+        if not (offset_start is None or offset_end is None):
+            self.create_selection(offset_start, offset_end)
 
     def merge_lines(self, window):
         self.set_context(window)
@@ -360,17 +364,43 @@ class ZenEditor():
             self.html_navigation = HtmlNavigation(content)
         return offset_start, offset_end, content
 
-    def new_node(self, window, direction):
+    #---------------------------------------------------------------------------------------
+
+    def new_tag(self, window, direction):
+
+        offset_start, offset_end, content = self.prepare_nav(window)
+
+        if direction == 'next':
+            node = self.html_navigation.next_tag(offset_start, offset_end, content)
+
+        else:
+            node = self.html_navigation.previous_tag(offset_start, offset_end, content)
+
+        if node:
+            iter_start = self.buffer.get_iter_at_offset(node.start)
+            iter_end = self.buffer.get_iter_at_offset(node.end)
+            self.create_selection(node.start, node.end)
+            self.show_caret()
+
+    def prev_tag(self, window):
+        self.new_tag(window, 'previous')
+
+    def next_tag(self, window):
+        self.new_tag(window, 'next')
+
+    #---------------------------------------------------------------------------------------
+
+    def new_node(self, window, direction, with_spaces = True):
 
         offset_start, offset_end, content = self.prepare_nav(window)
 
         while True:
 
             if direction == 'next':
-                node = self.html_navigation.next(offset_start, offset_end, content)
+                node = self.html_navigation.next_node(offset_start, offset_end, content)
 
             else:
-                node = self.html_navigation.previous(offset_start, offset_end, content)
+                node = self.html_navigation.previous_node(offset_start, offset_end, content)
 
             if node:
 
@@ -378,7 +408,7 @@ class ZenEditor():
                 iter_end = self.buffer.get_iter_at_offset(node.end)
 
                 found = self.buffer.get_text(iter_start, iter_end).decode('UTF-8')
-                if found.isspace() and found.find('\n') != -1:
+                if not with_spaces and found.isspace() and found.find('\n') != -1:
                     offset_start = node.start
                     offset_end = node.end
 
