@@ -6,7 +6,7 @@ This plugin fully integrates [Zen Coding](http://code.google.com/p/zen-coding/) 
 - Expand abbreviation
 - Expand incrementally with abbreviation
 - Wrap incrementally with abbreviation
-- Balance tag inward or outward
+- Select inward or outward (*)
 - Merge lines
 - Go to previous or next html tag (*)
 - Go to previous or next html node (*)
@@ -18,7 +18,7 @@ This plugin fully integrates [Zen Coding](http://code.google.com/p/zen-coding/) 
 - Toggle comment
 - Create your own abbreviations and snippets
 
-(*) these features are not part of the original Zen Coding package
+(*) these features use [html_navigation.py](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/html_navigation.py) instead of [zen_actions.py](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/zen_actions.py)
 
 These actions are available using keyboard shortcuts and menu items.
 
