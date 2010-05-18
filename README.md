@@ -8,8 +8,8 @@ This plugin fully integrates [Zen Coding](http://code.google.com/p/zen-coding/) 
 - Wrap incrementally with abbreviation
 - Balance tag inward or outward
 - Merge lines
-- Go to previous or next html tags (*)
-- Go to previous or next html nodes (*)
+- Go to previous or next html tag (*)
+- Go to previous or next html node (*)
 - Go to previous or next edit point
 - Update tag image size
 - Toggle between image url and data
