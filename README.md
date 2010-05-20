@@ -20,7 +20,8 @@ This plugin fully integrates [Zen Coding](http://code.google.com/p/zen-coding/) 
 - Insert incrementally 'lorem ipsum' words or sentences, or random letters (**)
 
 (*) these features use [html_navigation.py](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/html_navigation.py) instead of [zen_actions.py](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/zen_actions.py)
-(**) this feature is not part of the original Zen Coding package; see [here](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/lorem_ipsum.py) for details.
+
+(**) see [here](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/lorem_ipsum.py) for usage; this feature is not part of the original Zen Coding package.
 
 These actions are available using keyboard shortcuts and menu items.
 
