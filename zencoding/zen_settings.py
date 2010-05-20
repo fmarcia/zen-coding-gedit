@@ -30,8 +30,8 @@ zen_settings = {
 		'extends': 'common',
 		'snippets': {
 			"@i": "@import url(|);",
-			"@m": "@media print {\n\t|\n}",
-			"@f": "@font-face {\n\tfont-family:|;\n\tsrc:url(|);\n}",
+			"@m": "@media print {\n${indentation}|\n}",
+			"@f": "@font-face {\n${indentation}font-family:|;\n${indentation}src:url(|);\n}",
 			"!": "!important",
 			"pos": "position:|;",
 			"pos:s": "position:static;",
@@ -508,16 +508,17 @@ zen_settings = {
 		'extends': 'common',
 		'filters': 'html',
 		'snippets': {
-			'cc:ie6': '<!--[if lte IE 6]>\n\t${child}|\n<![endif]-->',
-			'cc:ie': '<!--[if IE]>\n\t${child}|\n<![endif]-->',
-			'cc:noie': '<!--[if !IE]><!-->\n\t${child}|\n<!--<![endif]-->',
+			'cc:ie6': '<!--[if lte IE 6]>\n${indentation}${child}|\n<![endif]-->',
+			'cc:ie': '<!--[if IE]>\n${indentation}${child}|\n<![endif]-->',
+			'cc:noie': '<!--[if !IE]><!-->\n${indentation}${child}|\n<!--<![endif]-->',
 			'html:4t': '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">\n' +
 					'<html lang="${lang}">\n' +
 					'<head>\n' +
 					'${indentation}<meta http-equiv="Content-Type" content="text/html;charset=${charset}">\n' +
 					'${indentation}<title></title>\n' +
 					'</head>\n' +
-					'<body>\n\t${child}|\n</body>\n' +
+					'<body>\n' +
+					'${indentation}${child}|\n</body>\n' +
 					'</html>',
 			
 			'html:4s': '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">\n' +
@@ -526,7 +527,8 @@ zen_settings = {
 					'${indentation}<meta http-equiv="Content-Type" content="text/html;charset=${charset}">\n' +
 					'${indentation}<title></title>\n' +
 					'</head>\n' +
-					'<body>\n\t${child}|\n</body>\n' +
+					'<body>\n' +
+					'${indentation}${child}|\n</body>\n' +
 					'</html>',
 			
 			'html:xt': '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">\n' +
@@ -535,7 +537,8 @@ zen_settings = {
 					'${indentation}<meta http-equiv="Content-Type" content="text/html;charset=${charset}" />\n' +
 					'${indentation}<title></title>\n' +
 					'</head>\n' +
-					'<body>\n\t${child}|\n</body>\n' +
+					'<body>\n' +
+					'${indentation}${child}|\n</body>\n' +
 					'</html>',
 			
 			'html:xs': '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n' +
@@ -544,7 +547,8 @@ zen_settings = {
 					'${indentation}<meta http-equiv="Content-Type" content="text/html;charset=${charset}" />\n' +
 					'${indentation}<title></title>\n' +
 					'</head>\n' +
-					'<body>\n\t${child}|\n</body>\n' +
+					'<body>\n' +
+					'${indentation}${child}|\n</body>\n' +
 					'</html>',
 			
 			'html:xxs': '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">\n' +
@@ -553,7 +557,8 @@ zen_settings = {
 					'${indentation}<meta http-equiv="Content-Type" content="text/html;charset=${charset}" />\n' +
 					'${indentation}<title></title>\n' +
 					'</head>\n' +
-					'<body>\n\t${child}|\n</body>\n' +
+					'<body>\n' +
+					'${indentation}${child}|\n</body>\n' +
 					'</html>',
 			
 			'html:5': '<!DOCTYPE HTML>\n' +
@@ -562,7 +567,8 @@ zen_settings = {
 					'${indentation}<meta charset="${charset}">\n' +
 					'${indentation}<title></title>\n' +
 					'</head>\n' +
-					'<body>\n\t${child}|\n</body>\n' +
+					'<body>\n' +
+					'${indentation}${child}|\n</body>\n' +
 					'</html>'
 		},
 		

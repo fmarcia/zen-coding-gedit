@@ -26,12 +26,14 @@ import os, re, locale
 from image_size import update_image_size
 import zen_dialog
 from html_navigation import HtmlNavigation
+from lorem_ipsum import lorem_ipsum
 
 class ZenEditor():
 
     def __init__(self):
         self.last_wrap = ''
         self.last_expand = ''
+        self.last_lorem_ipsum = 's 11 9 15'
         zen_core.set_caret_placeholder('')
         self.html_navigation = None
 
@@ -479,4 +481,22 @@ class ZenEditor():
         result = zen_actions.toggle_comment(self)
         self.buffer.end_user_action()
         return result
+
+    #---------------------------------------------------------------------------------------
+
+    def do_lorem_ipsum(self, done, cmd):
+        self.buffer.begin_user_action()
+        if done:
+            self.buffer.undo()
+            self.restore_selection()
+        content = lorem_ipsum(cmd)
+        if content:
+            self.replace_content(content, self.get_insert_offset())
+        self.buffer.end_user_action()
+        return not not content
+
+    def lorem_ipsum(self, window):
+        self.set_context(window)
+        self.save_selection()
+        done, self.last_lorem_ipsum = zen_dialog.main(self, window, self.do_lorem_ipsum, self.last_lorem_ipsum)
 

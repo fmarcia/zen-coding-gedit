@@ -17,8 +17,10 @@ This plugin fully integrates [Zen Coding](http://code.google.com/p/zen-coding/) 
 - Split or join tags
 - Toggle comment
 - Create your own abbreviations and snippets
+- Insert incrementally 'lorem ipsum' words or sentences, or random letters (**)
 
 (*) these features use [html_navigation.py](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/html_navigation.py) instead of [zen_actions.py](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/zen_actions.py)
+(**) this feature is not part of the original Zen Coding package; see [here](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/lorem_ipsum.py) for details.
 
 These actions are available using keyboard shortcuts and menu items.
 
