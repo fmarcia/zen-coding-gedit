@@ -36,6 +36,8 @@ zencoding_ui_str = """
           <menuitem name="ZenCodingExpandW"  action="ZenCodingExpandWAction"/>
           <menuitem name="ZenCodingWrap"     action="ZenCodingWrapAction"/>
           <separator/>
+          <menuitem name="LoremIpsum"        action="LoremIpsumAction"/>
+          <separator/>
           <menuitem name="ZenCodingInward"   action="ZenCodingInwardAction"/>
           <menuitem name="ZenCodingOutward"  action="ZenCodingOutwardAction"/>
           <separator/>
@@ -56,7 +58,6 @@ zencoding_ui_str = """
           <separator/>
           <menuitem name="ZenCodingSettings" action="ZenCodingSettingsAction"/>
         </menu>
-        <menuitem   name="LoremIpsum"        action="LoremIpsumAction"/>
       </placeholder>
     </menu>
   </menubar>
@@ -72,6 +73,7 @@ class ZenCodingPlugin(gedit.Plugin):
           ('ZenCodingExpandAction',   None, '_Expand abbreviation',         '<Ctrl>E',            "Expand abbreviation to raw HTML/CSS",         self.expand_abbreviation),
           ('ZenCodingExpandWAction',  None, 'E_xpand with abbreviation...', '<Ctrl><Alt>E',       "Type in an abbreviation to expand",           self.expand_with_abbreviation),
           ('ZenCodingWrapAction',     None, '_Wrap with abbreviation...',   '<Ctrl><Shift>E',     "Wrap with code expanded from abbreviation",   self.wrap_with_abbreviation),
+          ('LoremIpsumAction',        None, '_Lorem ipsum...',              '<Ctrl><Alt>X',       "Insert a lorem ipsum string",                 self.lorem_ipsum),
           ('ZenCodingInwardAction',   None, 'Select _inward',               '<Ctrl><Alt>I',       "Select inner tag's content",                  self.match_pair_inward),
           ('ZenCodingOutwardAction',  None, 'Select _outward',              '<Ctrl><Alt>O',       "Select outer tag's content",                  self.match_pair_outward),
           ('ZenCodingPTagAction',     None, 'Previous tag',                 '<Ctrl><Alt>Up',      "Select the previous tag in HTML code",        self.prev_tag),
@@ -86,8 +88,7 @@ class ZenCodingPlugin(gedit.Plugin):
           ('ZenCodingRemoveAction',   None, '_Remove tag',                  '<Ctrl><Alt>R',       "Remove a tag",                                self.remove_tag),
           ('ZenCodingSplitAction',    None, 'Split or _join tag',           '<Ctrl><Alt>J',       "Toggle between single and double tag",        self.split_join_tag),
           ('ZenCodingCommentAction',  None, 'Toggle _comment',              '<Ctrl><Alt>C',       "Toggle an XML or HTML comment",               self.toggle_comment),
-          ('ZenCodingSettingsAction', None, 'E_dit settings...',            None,                "Customize snippets and abbreviations",        self.edit_settings),
-          ('LoremIpsumAction',        None, 'Lorem ipsum...',               '<Ctrl><Alt>X',       "Insert a lorem ipsum string",                 self.lorem_ipsum)
+          ('ZenCodingSettingsAction', None, 'E_dit settings...',            None,                "Customize snippets and abbreviations",        self.edit_settings)
         ]
         windowdata = dict()
         window.set_data("ZenCodingPluginDataKey", windowdata)
@@ -127,6 +128,9 @@ class ZenCodingPlugin(gedit.Plugin):
 
     def wrap_with_abbreviation(self, action, window):
         self.editor.wrap_with_abbreviation(window)
+
+    def lorem_ipsum(self, action, window):
+        self.editor.lorem_ipsum(window)
 
     def match_pair_inward(self, action, window):
         self.editor.match_pair_inward(window)
@@ -172,7 +176,4 @@ class ZenCodingPlugin(gedit.Plugin):
 
     def edit_settings(self, action, window):
         window.create_tab_from_uri("file:///" + os.path.expanduser("~/.gnome2/gedit/plugins/zencoding/my_zen_settings.py"), None, 0, True, True)
-
-    def lorem_ipsum(self, action, window):
-        self.editor.lorem_ipsum(window)
 
