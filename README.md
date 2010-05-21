@@ -21,7 +21,7 @@ This plugin fully integrates [Zen Coding](http://code.google.com/p/zen-coding/) 
 
 (*) these features use [html_navigation.py](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/html_navigation.py) instead of [zen_actions.py](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/zen_actions.py)
 
-(**) see [lorem_ipsum.py](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/lorem_ipsum.py) for usage; this feature is not part of the original Zen Coding package.
+(**) see [lorem_ipsum.py](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/lorem_ipsum.py) for usage
 
 These actions are available using keyboard shortcuts and menu items.
 
