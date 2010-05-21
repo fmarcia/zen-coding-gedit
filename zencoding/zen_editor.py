@@ -33,7 +33,7 @@ class ZenEditor():
     def __init__(self):
         self.last_wrap = ''
         self.last_expand = ''
-        self.last_lorem_ipsum = 's 11 9 15'
+        self.last_lorem_ipsum = 'list 5*5'
         zen_core.set_caret_placeholder('')
         self.html_navigation = None
 

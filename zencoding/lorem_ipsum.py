@@ -27,7 +27,10 @@ Command format:
 	l[ist] [case] [number_of_words_1 [number_of_words_2 [...]]]
 
 	where case is { u[pper] | lo[wer] | t[itle] }
-	and number_of_words is an integer or a multiplication (n*m)
+	and number_of_words is an integer or a multiplication (for example '3*6')
+	
+	commands can be shorten by using initials. For example, "wt 9" is equivalent
+	to "words title 9"
 	
 	see examples at the end of this script
 
@@ -177,7 +180,7 @@ def lorem_ipsum(command):
 		
 	method, case, params = parse(args)
 	if method is None:
-		method = get_characters
+		method = get_list
 	return method(case, params)
 
 if __name__ == '__main__':
