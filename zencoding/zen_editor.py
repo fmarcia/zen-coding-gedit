@@ -112,7 +112,9 @@ class ZenEditor():
         """
         iter_current = self.get_insert_iter()
         offset_start = self.buffer.get_iter_at_line(iter_current.get_line()).get_offset()
-        offset_end = offset_start + iter_current.get_chars_in_line() - 1
+        offset_end = offset_start + iter_current.get_chars_in_line()
+        if offset_end != self.get_end_offset():
+        	offset_end -= 1
         return offset_start, offset_end
 
     def get_caret_pos(self):
