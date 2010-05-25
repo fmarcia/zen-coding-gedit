@@ -224,7 +224,7 @@ class Node ():
 
 		return None, None
 
-	def zenify(self, content):
+	def zenify(self, content, mode):
 
 		result = ''
 		
@@ -234,22 +234,32 @@ class Node ():
 		zen_id = ''
 		zen_class = ''
 		zen_children = []
+		zen_attributes = []
+
 		for child in self.children:
+
 			name = child.name.lower()
-			if child.type == 'attribute' and name in ['id', 'class']:
+
+			if mode > 0 and child.type == 'attribute' and name in ['id', 'class']:
 				for grand_child in child.children:
 					if grand_child.type == 'value' and grand_child.start < grand_child.end and not grand_child.children:
 						if name == 'id':
 							zen_id = '#' + content[grand_child.start:grand_child.end]
 						elif name == 'class':
 							zen_class = '.' + '.'.join(filter(lambda s: s, re.split(' +', content[grand_child.start:grand_child.end])))
-			if child.type in Node.tag_types_basic:
-				zen_children.append(child.zenify(content))
 
-		zen_children = filter(lambda s: s, zen_children)
+			elif mode > 1 and child.type == 'attribute':
+				for grand_child in child.children:
+					if grand_child.type == 'value' and grand_child.start < grand_child.end and not grand_child.children:
+						if mode == 2 or name.startswith('on'):
+							zen_attributes.append(name)
+						else:
+							zen_attributes.append(name + '="' + content[grand_child.start:grand_child.end] + '"')
+
+			elif child.type in Node.tag_types_basic:
+				zen_children.append(child.zenify(content, mode))
 
 		zen_children = factorize(zen_children)
-
 		if len(zen_children) == 0:
 			zen_children_string = ''
 		elif len(zen_children) == 1:
@@ -257,10 +267,14 @@ class Node ():
 		else:
 			zen_children_string = '>(' + '+'.join(zen_children) + ')'
 			
+		zen_attributes_string = ''
+		if zen_attributes:
+			zen_attributes_string = '[' + ' '.join(zen_attributes) + ']'
+			
 		if zen_children_string:
-			return '(' + self.name + zen_id + zen_class + zen_children_string + ')'
+			return '(' + self.name + zen_id + zen_class + zen_attributes_string + zen_children_string + ')'
 		else:
-			return self.name + zen_id + zen_class
+			return self.name + zen_id + zen_class + zen_attributes_string
 
 	def show(self, level = 0):
 		children = ''
@@ -603,7 +617,7 @@ class HtmlNavigation():
 			return current.outer_bounds(offset_start, offset_end)
 		return None, None
 
-	def zenify(self, offset_start, offset_end, content):
+	def zenify(self, offset_start, offset_end, content, mode = 3):
 
 		current_start = self._prepare(offset_start, offset_start, content)
 		while current_start.type not in Node.tag_types_basic:
@@ -648,7 +662,7 @@ class HtmlNavigation():
 
 		result = []
 		for node in nodes:
-			result.append(node.zenify(content))
+			result.append(node.zenify(content, mode))
 		result = factorize(result)
 		return '+'.join(result)
 

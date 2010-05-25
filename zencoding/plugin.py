@@ -32,33 +32,40 @@ zencoding_ui_str = """
     <menu name="EditMenu" action="Edit">
       <placeholder name="EditOps_5">
         <menu action="ZenCodingMenuAction">
-          <menuitem name="ZenCodingExpand"   action="ZenCodingExpandAction"/>
-          <menuitem name="ZenCodingExpandW"  action="ZenCodingExpandWAction"/>
-          <menuitem name="ZenCodingWrap"     action="ZenCodingWrapAction"/>
+          <menuitem name="ZenCodingExpand"    action="ZenCodingExpandAction"/>
+          <menuitem name="ZenCodingExpandW"   action="ZenCodingExpandWAction"/>
+          <menuitem name="ZenCodingWrap"      action="ZenCodingWrapAction"/>
           <separator/>
-          <menuitem name="ZenCodingZenify"   action="ZenCodingZenifyAction"/>
+          <placeholder name="EditOps_5">
+            <menu action="ZenCodingZenifyAction">
+              <menuitem name="ZenCodingZenify0" action="ZenCodingZenify0Action"/>
+              <menuitem name="ZenCodingZenify1" action="ZenCodingZenify1Action"/>
+              <menuitem name="ZenCodingZenify2" action="ZenCodingZenify2Action"/>
+              <menuitem name="ZenCodingZenify3" action="ZenCodingZenify3Action"/>
+            </menu>
+          </placeholder>
           <separator/>
-          <menuitem name="LoremIpsum"        action="LoremIpsumAction"/>
+          <menuitem name="LoremIpsum"         action="LoremIpsumAction"/>
           <separator/>
-          <menuitem name="ZenCodingInward"   action="ZenCodingInwardAction"/>
-          <menuitem name="ZenCodingOutward"  action="ZenCodingOutwardAction"/>
+          <menuitem name="ZenCodingInward"    action="ZenCodingInwardAction"/>
+          <menuitem name="ZenCodingOutward"   action="ZenCodingOutwardAction"/>
           <separator/>
-          <menuitem name="ZenCodingPTag"     action="ZenCodingPTagAction"/>
-          <menuitem name="ZenCodingNTag"     action="ZenCodingNTagAction"/>
-          <menuitem name="ZenCodingPNode"    action="ZenCodingPNodeAction"/>
-          <menuitem name="ZenCodingNNode"    action="ZenCodingNNodeAction"/>
-          <menuitem name="ZenCodingPrev"     action="ZenCodingPrevAction"/>
-          <menuitem name="ZenCodingNext"     action="ZenCodingNextAction"/>
+          <menuitem name="ZenCodingPTag"      action="ZenCodingPTagAction"/>
+          <menuitem name="ZenCodingNTag"      action="ZenCodingNTagAction"/>
+          <menuitem name="ZenCodingPNode"     action="ZenCodingPNodeAction"/>
+          <menuitem name="ZenCodingNNode"     action="ZenCodingNNodeAction"/>
+          <menuitem name="ZenCodingPrev"      action="ZenCodingPrevAction"/>
+          <menuitem name="ZenCodingNext"      action="ZenCodingNextAction"/>
           <separator/>
-          <menuitem name="ZenCodingSize"     action="ZenCodingSizeAction"/>
-          <menuitem name="ZenCodingData"     action="ZenCodingDataAction"/>
+          <menuitem name="ZenCodingSize"      action="ZenCodingSizeAction"/>
+          <menuitem name="ZenCodingData"      action="ZenCodingDataAction"/>
           <separator/>
-          <menuitem name="ZenCodingMerge"    action="ZenCodingMergeAction"/>
-          <menuitem name="ZenCodingRemove"   action="ZenCodingRemoveAction"/>
-          <menuitem name="ZenCodingSplit"    action="ZenCodingSplitAction"/>
-          <menuitem name="ZenCodingComment"  action="ZenCodingCommentAction"/>
+          <menuitem name="ZenCodingMerge"     action="ZenCodingMergeAction"/>
+          <menuitem name="ZenCodingRemove"    action="ZenCodingRemoveAction"/>
+          <menuitem name="ZenCodingSplit"     action="ZenCodingSplitAction"/>
+          <menuitem name="ZenCodingComment"   action="ZenCodingCommentAction"/>
           <separator/>
-          <menuitem name="ZenCodingSettings" action="ZenCodingSettingsAction"/>
+          <menuitem name="ZenCodingSettings"  action="ZenCodingSettingsAction"/>
         </menu>
       </placeholder>
     </menu>
@@ -75,7 +82,11 @@ class ZenCodingPlugin(gedit.Plugin):
           ('ZenCodingExpandAction',   None, '_Expand abbreviation',         '<Ctrl>E',            "Expand abbreviation to raw HTML/CSS",         self.expand_abbreviation),
           ('ZenCodingExpandWAction',  None, 'E_xpand with abbreviation...', '<Ctrl><Alt>E',       "Type in an abbreviation to expand",           self.expand_with_abbreviation),
           ('ZenCodingWrapAction',     None, '_Wrap with abbreviation...',   '<Ctrl><Shift>E',     "Wrap with code expanded from abbreviation",   self.wrap_with_abbreviation),
-          ('ZenCodingZenifyAction',   None, '_Zenify...',                   '<Ctrl><Alt>Z',       "Reduce to abbreviation",                      self.zenify),
+          ('ZenCodingZenifyAction',   None, '_Zenify',                      None,                 "Reduce to abbreviation",                     None),
+          ('ZenCodingZenify0Action',  None, '_Tag names',                   '<Ctrl><Alt>Z',       "Reduce to tag names only",                    self.zenify0),
+          ('ZenCodingZenify1Action',  None, '  + _Ids and classes',         None,                "Reduce with ids and classes",                 self.zenify1),
+          ('ZenCodingZenify2Action',  None, '    + All other _attributes',  None,                "Reduce with all attributes",                  self.zenify2),
+          ('ZenCodingZenify3Action',  None, '      + _Values',              None,                "Reduce with all attributes and values",       self.zenify3),
           ('LoremIpsumAction',        None, '_Lorem ipsum...',              '<Ctrl><Alt>X',       "Insert a lorem ipsum string",                 self.lorem_ipsum),
           ('ZenCodingInwardAction',   None, 'Select _inward',               '<Ctrl><Alt>I',       "Select inner tag's content",                  self.match_pair_inward),
           ('ZenCodingOutwardAction',  None, 'Select _outward',              '<Ctrl><Alt>O',       "Select outer tag's content",                  self.match_pair_outward),
@@ -132,8 +143,17 @@ class ZenCodingPlugin(gedit.Plugin):
     def wrap_with_abbreviation(self, action, window):
         self.editor.wrap_with_abbreviation(window)
 
-    def zenify(self, action, window):
-        self.editor.zenify(window)
+    def zenify0(self, action, window):
+        self.editor.zenify(window, 0)
+
+    def zenify1(self, action, window):
+        self.editor.zenify(window, 1)
+
+    def zenify2(self, action, window):
+        self.editor.zenify(window, 2)
+
+    def zenify3(self, action, window):
+        self.editor.zenify(window, 3)
 
     def lorem_ipsum(self, action, window):
         self.editor.lorem_ipsum(window)

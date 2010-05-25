@@ -347,10 +347,10 @@ class ZenEditor():
 
     #---------------------------------------------------------------------------------------
 
-    def zenify(self, window):
+    def zenify(self, window, mode):
         self.set_context(window)
         offset_start, offset_end, content = self.prepare_nav(window)
-        result = self.html_navigation.zenify(offset_start, offset_end, content)
+        result = self.html_navigation.zenify(offset_start, offset_end, content, mode)
         if result:
             self.save_selection()
             self.prompt(result)
