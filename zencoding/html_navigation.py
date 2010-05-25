@@ -58,7 +58,7 @@ def factorize(zen_children):
 
 class Node ():
 
-	tag_types_basic = ['tag', 'empty-tag']
+	tag_types_basic = ['root', 'tag', 'empty-tag']
 	tag_types = ['tag', 'empty-tag', 'question-tag', 'exclam-tag', 'comment', 'cdata']
 	data_types = [ 'data', 'value' ]
 	other_types = [ 'root', 'attribute' ]
@@ -611,16 +611,24 @@ class HtmlNavigation():
 				else:
 					current_end = self._prepare(len(content) - 1, len(content) - 1, content)
 					break
-				
+
 		nodes = []
-		if current_end.is_child_of(current_start) or current_start == current_end:
+
+		if current_start.type == 'root':
+			for child in current_start.children:
+				if current_start.type in Node.tag_types_basic:
+					nodes.append(child)
+
+		elif current_end.is_child_of(current_start) or current_start == current_end:
 			nodes.append(current_start)
+
 		elif current_end.is_sibling_of(current_start):
 			while current_start and current_start != current_end:
 				if current_start.type in Node.tag_types_basic:
 					nodes.append(current_start)
 				current_start = current_start.next_sibling_tag(True)
 			nodes.append(current_end)
+
 		else:
 			offset_start, offset_end = self.outer_bounds(offset_start, offset_end, content)
 			nodes.append(self._prepare(offset_start, offset_end, content))
