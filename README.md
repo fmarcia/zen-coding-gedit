@@ -6,7 +6,7 @@ This plugin fully integrates [Zen Coding](http://code.google.com/p/zen-coding/) 
 - Expand abbreviation
 - Expand incrementally with abbreviation
 - Wrap incrementally with abbreviation
-- Zenify (reduce to abbreviation)
+- Zenify (reduce to abbreviation) (*)
 - Select inward or outward (*)
 - Merge lines
 - Go to previous or next html tag (*)
