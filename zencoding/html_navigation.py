@@ -358,7 +358,17 @@ class HtmlNavigation():
 
 			elif token.startswith('</'):
 
-				if node.type == 'data':
+				if node.type == 'script-data':
+					
+					name = token[2:-1].rstrip().lower()
+					if name == 'script':
+						node.type = 'data'
+						node.end = offset
+						node = node.parent
+						node.end = end
+						node = node.parent.append('data', end)
+
+				elif node.type == 'data':
 
 					node.end = offset
 
@@ -410,7 +420,10 @@ class HtmlNavigation():
 						node = node.parent.append('data', end)
 					else:
 						node.type = 'tag'
-						node = node.append('data', end)
+						if node.name == 'script':
+							node = node.append('script-data', end)
+						else:
+							node = node.append('data', end)
 
 			elif token == '"':
 				if node.type == 'attribute' and previous_token == '=':
