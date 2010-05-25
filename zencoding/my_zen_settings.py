@@ -7,7 +7,8 @@ my_zen_settings = {
 	'html': {
 		'abbreviations': {
 			'jq': '<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>',
-			'link:css': '<link rel="stylesheet" type="text/css" href="" media="all" />'
+			'link:css': '<link rel="stylesheet" type="text/css" href="" media="all" />',
+			'meta': '<meta name="" content="" />'
 		},
 		'snippets': {
 			'dtdd': '<dt>${child}|</dt>\n<dd></dd>',
