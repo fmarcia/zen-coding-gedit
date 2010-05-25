@@ -110,20 +110,14 @@ class ZenEditor():
         start, end = zen_editor.get_current_line_range();
         print('%s, %s' % (start, end))
         """
-        iter_current = self.get_insert_iter()
-        iter_current = self.buffer.get_iter_at_line(iter_current.get_line())
-        offset_start = iter_current.get_offset()
-        iter_start = self.buffer.get_iter_at_offset(offset_start)
-
-        iter_current.forward_to_line_end()
-        offset_end = iter_current.get_offset()
-        
-        line = self.buffer.get_text(iter_start, iter_current).decode('UTF-8')
-        if line.endswith('\r\n'): offset_end -= 2
-        elif line.endswith('\r'): offset_end -= 1
-        elif line.endswith('\n'): offset_end -= 1
-
-        return offset_start, offset_end
+        iter_start = self.get_insert_iter()
+        iter_start.set_line_offset(0)
+        iter_end = iter_start.copy()
+        if iter_end.forward_visible_line():
+            iter_end.backward_char()
+        else:
+            iter_end = self.buffer.get_end_iter()
+        return iter_start.get_offset(), iter_end.get_offset()
 
     def get_caret_pos(self):
         """ Returns current caret position """
@@ -184,6 +178,7 @@ class ZenEditor():
         self.insertion_start = self.get_insert_offset()
         
         padding = zen_actions.get_current_line_padding(self)
+        padding = re.sub('[\r\n]', '', padding)
         self.buffer.insert_at_cursor(zen_core.pad_string(value, padding))
 
         self.insertion_end = self.get_insert_offset()
