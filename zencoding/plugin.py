@@ -36,6 +36,8 @@ zencoding_ui_str = """
           <menuitem name="ZenCodingExpandW"  action="ZenCodingExpandWAction"/>
           <menuitem name="ZenCodingWrap"     action="ZenCodingWrapAction"/>
           <separator/>
+          <menuitem name="ZenCodingZenify"   action="ZenCodingZenifyAction"/>
+          <separator/>
           <menuitem name="LoremIpsum"        action="LoremIpsumAction"/>
           <separator/>
           <menuitem name="ZenCodingInward"   action="ZenCodingInwardAction"/>
@@ -73,6 +75,7 @@ class ZenCodingPlugin(gedit.Plugin):
           ('ZenCodingExpandAction',   None, '_Expand abbreviation',         '<Ctrl>E',            "Expand abbreviation to raw HTML/CSS",         self.expand_abbreviation),
           ('ZenCodingExpandWAction',  None, 'E_xpand with abbreviation...', '<Ctrl><Alt>E',       "Type in an abbreviation to expand",           self.expand_with_abbreviation),
           ('ZenCodingWrapAction',     None, '_Wrap with abbreviation...',   '<Ctrl><Shift>E',     "Wrap with code expanded from abbreviation",   self.wrap_with_abbreviation),
+          ('ZenCodingZenifyAction',   None, '_Zenify...',                   '<Ctrl><Alt>Z',       "Reduce to abbreviation",                      self.zenify),
           ('LoremIpsumAction',        None, '_Lorem ipsum...',              '<Ctrl><Alt>X',       "Insert a lorem ipsum string",                 self.lorem_ipsum),
           ('ZenCodingInwardAction',   None, 'Select _inward',               '<Ctrl><Alt>I',       "Select inner tag's content",                  self.match_pair_inward),
           ('ZenCodingOutwardAction',  None, 'Select _outward',              '<Ctrl><Alt>O',       "Select outer tag's content",                  self.match_pair_outward),
@@ -128,6 +131,9 @@ class ZenCodingPlugin(gedit.Plugin):
 
     def wrap_with_abbreviation(self, action, window):
         self.editor.wrap_with_abbreviation(window)
+
+    def zenify(self, action, window):
+        self.editor.zenify(window)
 
     def lorem_ipsum(self, action, window):
         self.editor.lorem_ipsum(window)

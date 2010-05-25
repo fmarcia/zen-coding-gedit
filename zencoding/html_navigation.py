@@ -24,8 +24,41 @@ Parse HTML content to navigate through its nodes
 
 import re
 
+def factorize(zen_children):
+
+	zen_children = filter(lambda s: s, zen_children)
+
+	if len(zen_children) > 1:
+	
+		zen_count = [1 for x in range(0, len(zen_children))]
+		index = 0
+		previous_child = ''
+		
+		for zen_child in zen_children:
+			if zen_child == previous_child:
+				zen_count[index] = zen_count[index - 1] + 1
+				zen_count[index - 1] = 0
+				zen_children[index - 1] = ''
+			previous_child = zen_child
+			index += 1
+			
+		index = 0
+		for zen_child in zen_children:
+			if zen_count[index] > 1:
+				parts = zen_child.split('>')
+				zen_children[index] = parts[0] + '*' + repr(zen_count[index])
+				if len(parts) > 1:
+					zen_children[index] += '>' + '>'.join(parts[1:])
+			index += 1
+		
+		zen_children = filter(lambda s: s, zen_children)
+		
+	return zen_children
+
+
 class Node ():
 
+	tag_types_basic = ['tag', 'empty-tag']
 	tag_types = ['tag', 'empty-tag', 'question-tag', 'exclam-tag', 'comment', 'cdata']
 	data_types = [ 'data', 'value' ]
 	other_types = [ 'root', 'attribute' ]
@@ -61,10 +94,11 @@ class Node ():
 					return child
 		return None
 
-	def first_child_tag(self):
+	def first_child_tag(self, basic = False):
+		tag_types = Node.tag_types_basic if basic else Node.tag_types
 		if len(self.children) > 0:
 			for child in self.children:
-				if child.type in Node.tag_types:
+				if child.type in tag_types:
 					return child
 		return None
 
@@ -76,13 +110,14 @@ class Node ():
 				return siblings[index + 1]
 		return None
 
-	def next_sibling_tag(self):
+	def next_sibling_tag(self, basic = False):
+		tag_types = Node.tag_types_basic if basic else Node.tag_types
 		if self.parent:
 			siblings = self.parent.children
 			index = siblings.index(self)
 			while index < len(siblings) - 1:
 				index += 1
-				if siblings[index].type in Node.tag_types:
+				if siblings[index].type in tag_types:
 					return siblings[index]
 		return None
 
@@ -91,11 +126,12 @@ class Node ():
 			return self.children[-1]
 		return None
 
-	def last_child_tag(self):
+	def last_child_tag(self, basic = False):
+		tag_types = Node.tag_types_basic if basic else Node.tag_types
 		index = len(self.children)
 		while index > 0:
 			index -= 1
-			if self.children[index].type in Node.tag_types:
+			if self.children[index].type in tag_types:
 				return self.children[index]
 		return None
 
@@ -107,23 +143,41 @@ class Node ():
 				return siblings[index - 1]
 		return None
 
-	def previous_sibling_tag(self):
+	def previous_sibling_tag(self, basic = False):
+		tag_types = Node.tag_types_basic if basic else Node.tag_types
 		if self.parent:
 			siblings = self.parent.children
 			index = siblings.index(self)
 			while index > 0:
 				index -= 1
-				if siblings[index].type in Node.tag_types:
+				if siblings[index].type in tag_types:
 					return siblings[index]
 		return None
 
-	def parent_tag(self):
+	def parent_tag(self, basic = False):
 		test = self
+		tag_types = Node.tag_types_basic if basic else Node.tag_types
 		while True:
 			test = test.parent
-			if test and test.type in Node.tag_types:
+			if test and test.type in tag_types:
 				return test
 		return None
+
+	def is_child_of(self, node):
+		parent = self.parent
+		while parent:
+			if parent == node:
+				return True
+			parent = parent.parent
+		return False
+
+	def is_sibling_of(self, node):
+		if self.parent and self.parent.children:
+			children = self.parent.children
+			for child in children:
+				if child == node:
+					return True
+		return False
 
 	def inner_bounds(self, offset_start, offset_end):
 
@@ -169,6 +223,44 @@ class Node ():
 			return self.parent.parent.outer_bounds(offset_start, offset_end)
 
 		return None, None
+
+	def zenify(self, content):
+
+		result = ''
+		
+		if self.type not in Node.tag_types_basic:
+			return ''
+			
+		zen_id = ''
+		zen_class = ''
+		zen_children = []
+		for child in self.children:
+			name = child.name.lower()
+			if child.type == 'attribute' and name in ['id', 'class']:
+				for grand_child in child.children:
+					if grand_child.type == 'value' and grand_child.start < grand_child.end and not grand_child.children:
+						if name == 'id':
+							zen_id = '#' + content[grand_child.start:grand_child.end]
+						elif name == 'class':
+							zen_class = '.' + '.'.join(filter(lambda s: s, re.split(' +', content[grand_child.start:grand_child.end])))
+			if child.type in Node.tag_types_basic:
+				zen_children.append(child.zenify(content))
+
+		zen_children = filter(lambda s: s, zen_children)
+
+		zen_children = factorize(zen_children)
+
+		if len(zen_children) == 0:
+			zen_children_string = ''
+		elif len(zen_children) == 1:
+			zen_children_string = '>' + zen_children[0]
+		else:
+			zen_children_string = '>(' + '+'.join(zen_children) + ')'
+			
+		if zen_children_string:
+			return '(' + self.name + zen_id + zen_class + zen_children_string + ')'
+		else:
+			return self.name + zen_id + zen_class
 
 	def show(self, level = 0):
 		children = ''
@@ -497,6 +589,48 @@ class HtmlNavigation():
 		if current:
 			return current.outer_bounds(offset_start, offset_end)
 		return None, None
+
+	def zenify(self, offset_start, offset_end, content):
+
+		current_start = self._prepare(offset_start, offset_start, content)
+		while current_start.type not in Node.tag_types_basic:
+			if current_start.parent:
+				current_start = current_start.parent
+			else:
+				current_start = self._prepare(0, 0, content)
+				break
+
+		if current_start.end == offset_end:
+			current_end = current_start
+				
+		else:
+			current_end = self._prepare(offset_end, offset_end, content)
+			while current_end.type not in Node.tag_types_basic:
+				if current_end.parent:
+					current_end = current_end.parent
+				else:
+					current_end = self._prepare(len(content) - 1, len(content) - 1, content)
+					break
+				
+		nodes = []
+		if current_end.is_child_of(current_start) or current_start == current_end:
+			nodes.append(current_start)
+		elif current_end.is_sibling_of(current_start):
+			while current_start and current_start != current_end:
+				if current_start.type in Node.tag_types_basic:
+					nodes.append(current_start)
+				current_start = current_start.next_sibling_tag(True)
+			nodes.append(current_end)
+		else:
+			offset_start, offset_end = self.outer_bounds(offset_start, offset_end, content)
+			nodes.append(self._prepare(offset_start, offset_end, content))
+
+		result = []
+		for node in nodes:
+			result.append(node.zenify(content))
+		result = factorize(result)
+		return '+'.join(result)
+
 
 if __name__ == '__main__':
 

@@ -339,6 +339,17 @@ class ZenEditor():
 
     #---------------------------------------------------------------------------------------
 
+    def zenify(self, window):
+        self.set_context(window)
+        offset_start, offset_end, content = self.prepare_nav(window)
+        result = self.html_navigation.zenify(offset_start, offset_end, content)
+        if result:
+            self.save_selection()
+            self.prompt(result)
+            self.restore_selection()
+
+    #---------------------------------------------------------------------------------------
+
     def match_pair_inward(self, window):
         offset_start, offset_end, content = self.prepare_nav(window)
         offset_start, offset_end = self.html_navigation.inner_bounds(offset_start, offset_end, content)
