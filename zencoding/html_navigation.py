@@ -244,9 +244,9 @@ class Node ():
 				for grand_child in child.children:
 					if grand_child.type == 'value' and grand_child.start < grand_child.end and not grand_child.children:
 						if name == 'id':
-							zen_id = '#' + content[grand_child.start:grand_child.end]
+							zen_id = '#' + '#'.join(filter(lambda s: s, re.split('\s+', content[grand_child.start:grand_child.end])))
 						elif name == 'class':
-							zen_class = '.' + '.'.join(filter(lambda s: s, re.split(' +', content[grand_child.start:grand_child.end])))
+							zen_class = '.' + '.'.join(filter(lambda s: s, re.split('\s+', content[grand_child.start:grand_child.end])))
 
 			elif mode > 1 and child.type == 'attribute':
 				for grand_child in child.children:
