@@ -472,7 +472,10 @@ class ZenEditor():
     def encode_decode_base64(self, window):
         self.set_context(window)
         self.buffer.begin_user_action()
-        zen_actions.encode_decode_base64(self)
+        try:
+            zen_actions.encode_decode_base64(self)
+        except:
+            pass
         self.buffer.end_user_action()
 
     #---------------------------------------------------------------------------------------

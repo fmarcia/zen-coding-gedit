@@ -27,14 +27,15 @@ def locate_file(editor_file, file_name):
 	"""
 	result = ''
 	
+	previous_parent = ''
 	parent = os.path.dirname(editor_file)
-	while parent and os.path.exists(parent):
+	while parent and os.path.exists(parent) and parent != previous_parent:
 		tmp = create_path(parent, file_name)
 		if os.path.exists(tmp):
 			result = tmp
 			break
-		
-		parent = os.path.dirname(editor_file)
+		previous_parent = parent
+		parent = os.path.dirname(parent)
 	
 	return result
 
