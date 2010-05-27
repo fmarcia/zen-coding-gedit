@@ -201,5 +201,6 @@ class ZenCodingPlugin(gedit.Plugin):
         self.editor.toggle_comment(window)
 
     def edit_settings(self, action, window):
-        window.create_tab_from_uri("file:///" + os.path.expanduser("~/.gnome2/gedit/plugins/zencoding/my_zen_settings.py"), None, 0, True, True)
+        name = 'file://' + os.path.join(os.path.dirname(__file__), 'my_zen_settings.py')
+        window.create_tab_from_uri(name, None, 0, True, True)
 
