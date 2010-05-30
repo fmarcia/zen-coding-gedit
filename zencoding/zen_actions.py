@@ -248,6 +248,7 @@ def find_new_edit_point(editor, inc=1, offset=0):
 	"""
 	cur_point = editor.get_caret_pos() + offset
 	content = editor.get_content()
+	syntax = editor.get_syntax()
 	max_len = len(content)
 	next_point = -1
 	re_empty_line = r'^\s+$'
@@ -267,12 +268,16 @@ def find_new_edit_point(editor, inc=1, offset=0):
 		next_char = char_at(content, cur_point + 1)
 		prev_char = char_at(content, cur_point - 1)
 		
-		if cur_char in '"\'':
+		if cur_char in '"\'' and syntax != 'css':
 			if next_char == cur_char and prev_char == '=':
 				# empty attribute
 				next_point = cur_point + 1
-		elif cur_char == '>' and next_char == '<':
+		elif cur_char == '>' and next_char == '<' and syntax != 'css':
 			# between tags
+			next_point = cur_point + 1
+		elif cur_char == ':' and next_char == ';' and syntax == 'css':
+			next_point = cur_point + 1
+		elif cur_char == '(' and next_char == ')' and syntax == 'css':
 			next_point = cur_point + 1
 		elif cur_char in '\r\n':
 			# empty line
