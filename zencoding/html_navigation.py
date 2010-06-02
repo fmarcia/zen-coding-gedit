@@ -226,8 +226,6 @@ class Node ():
 
 	def zenify(self, content, mode):
 
-		result = ''
-		
 		if self.type not in Node.tag_types_basic:
 			return ''
 			
