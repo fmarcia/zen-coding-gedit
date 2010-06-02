@@ -268,17 +268,19 @@ def find_new_edit_point(editor, inc=1, offset=0):
 		next_char = char_at(content, cur_point + 1)
 		prev_char = char_at(content, cur_point - 1)
 		
-		if cur_char in '"\'' and syntax != 'css':
+		if cur_char in '"\'' and syntax != 'css': # (FM) only for xml-like syntax
 			if next_char == cur_char and prev_char == '=':
 				# empty attribute
 				next_point = cur_point + 1
-		elif cur_char == '>' and next_char == '<' and syntax != 'css':
+		elif cur_char == '>' and next_char == '<' and syntax != 'css': # (FM) only for xml-like syntax
 			# between tags
 			next_point = cur_point + 1
+		# (FM) for css syntax
 		elif cur_char == ':' and next_char == ';' and syntax == 'css':
 			next_point = cur_point + 1
 		elif cur_char == '(' and next_char == ')' and syntax == 'css':
 			next_point = cur_point + 1
+		# (FM) /for css syntax
 		elif cur_char in '\r\n':
 			# empty line
 			if re.search(re_empty_line, get_line(cur_point - 1)):
@@ -729,7 +731,7 @@ def encode_to_base64(editor, img_path, pos):
 	
 	b64 = 'data:' + (mime_types[zen_file.get_ext(real_img_path)] or default_mime_type) + ';base64,' + b64
 	
-	editor.replace_content(b64, pos, pos + len(img_path)) # (FM) $0 isn't used in gedit
+	editor.replace_content(b64, pos, pos + len(img_path)) # (FM) don't use snippets so don't need $0
 	return True
 
 def decode_from_base64(editor, data, pos):
@@ -755,5 +757,5 @@ def decode_from_base64(editor, data, pos):
 	
 	
 	zen_file.save(abs_path, base64.b64decode( re.sub(r'^data\:.+?;.+?,', '', data) ))
-	editor.replace_content(file_path, pos, pos + len(data)) # (FM) $0 isn't used in gedit
+	editor.replace_content(file_path, pos, pos + len(data)) # (FM) don't use snippets so don't need $0
 	return True
