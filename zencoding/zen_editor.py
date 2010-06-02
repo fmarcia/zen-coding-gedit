@@ -21,23 +21,59 @@ Changes for Gedit Plugin
 @link http://github.com/fmarcia/zen-coding-gedit
 '''
 
-import zen_core, zen_actions, zen_file
-import os, re, locale
+import zen_core, zen_actions, zen_file, html_matcher
+import sys, os, re, locale
 from image_size import update_image_size
 import zen_dialog
 from html_navigation import HtmlNavigation
 from lorem_ipsum import lorem_ipsum
+
+class ZenSnippet():
+
+    def __init__(self, abbreviation, content):
+        self.valid = True
+        self.properties = {
+            'text': content,
+            'drop-targets': '',
+            'tag': abbreviation,
+            'description': 'zencoding',
+            'accelerator': ''
+        }
+
+    def __getitem__(self, prop):
+        return self.properties[prop]
+
+
+placeholder_count = 0
+
+def placeholder_feed(m):
+
+    global placeholder_count
+    placeholder_count += 1
+    
+    skip = len(zen_core.get_caret_placeholder()) + 1
+
+    if m and m.group(1):
+        if m.group(1).startswith('{{'):
+            return '${' + repr(placeholder_count)
+        elif m.group(1).startswith('>'):
+            return '>${' + repr(placeholder_count) + ':' + m.group(1)[skip:-1] + '}<'
+        else:
+            return '$' + repr(placeholder_count)
+    else:
+        return ''
+
 
 class ZenEditor():
 
     def __init__(self):
         self.last_wrap = ''
         self.last_expand = ''
+        self.placeholder = zen_core.get_caret_placeholder()
         self.last_lorem_ipsum = 'list 5*5'
-        zen_core.set_caret_placeholder('')
         self.html_navigation = None
 
-    def set_context(self, context):
+    def set_context(self, context, use_original_placeholder = False):
         """
         Setup underlying editor context. You should call this method
         <code>before</code> using any Zen Coding action.
@@ -65,9 +101,17 @@ class ZenEditor():
             zen_core.set_variable('indentation', " " * context.get_active_view().get_tab_width())
         else:
             zen_core.set_variable('indentation', "\t")
-        
         #zen_core.set_newline(???)
-
+        
+        try:
+            sys.path.append('/usr/lib/gedit-2/plugins')
+            from snippets.Document import Document
+            self.snippet_document = Document(None, self.view)
+        except:
+            self.snippet_document = None
+        
+        zen_core.set_caret_placeholder(self.placeholder if use_original_placeholder else '')
+        
     def get_selection_range(self):
         """
         Returns character indexes of selected text
@@ -282,15 +326,54 @@ class ZenEditor():
         return zen_core.get_variable('user_settings_error')
 
     #---------------------------------------------------------------------------------------
+    
+    def expand_with_snippet(self, abbr, mode = 0, content = ''):
+    	# mode:
+        # 0: expand abbr
+        # 1: expand with abbr
+        # 2: wrap with abbr
+
+        if mode < 2:
+            content = zen_core.expand_abbreviation(abbr, self.get_syntax(), self.get_profile_name())
+        if not content:
+            return
+
+        global placeholder_count
+        placeholder_count = 0
+        placeholder_string = zen_core.get_caret_placeholder()
+        search_string = '(' + placeholder_string + '|\{' + placeholder_string + '|>' + placeholder_string + '[^<]+<' + ')'
+        content = re.sub(search_string, placeholder_feed, content)
+
+        offset_start, offset_end = self.get_selection_range()
+        if offset_start == offset_end and mode == 0:
+            offset_start -= len(abbr)
+
+        snippet = ZenSnippet(abbr, content)
+        iter_start = self.buffer.get_iter_at_offset(offset_start)
+        iter_end = self.buffer.get_iter_at_offset(offset_end)
+        
+        self.snippet_document.apply_snippet(snippet, iter_start, iter_end)
+
+    #---------------------------------------------------------------------------------------
 
     def expand_abbreviation(self, window):
-        self.set_context(window)
-        self.buffer.begin_user_action()
-        result = zen_actions.expand_abbreviation(self)
-        if result:
-            self.start_edit()
-        self.buffer.end_user_action()
+
+        self.set_context(window, True)
         
+        if self.snippet_document:
+            abbr = zen_actions.find_abbreviation(self)
+            if not abbr:
+                return
+            self.expand_with_snippet(abbr)
+
+        else:
+        
+            self.buffer.begin_user_action()
+            result = zen_actions.expand_abbreviation(self)
+            if result:
+                self.start_edit()
+            self.buffer.end_user_action()
+
     #---------------------------------------------------------------------------------------
 
     def save_selection(self):
@@ -304,41 +387,95 @@ class ZenEditor():
 
     #---------------------------------------------------------------------------------------
 
-    def do_expand_with_abbreviation(self, done, abbr):
+    def do_expand_with_abbreviation(self, done, abbr, last = False):
         self.buffer.begin_user_action()
         if done:
             self.buffer.undo()
             self.restore_selection()
         content = zen_core.expand_abbreviation(abbr, self.get_syntax(), self.get_profile_name())
         if content:
-            self.replace_content(content, self.get_insert_offset())
+            if last and self.snippet_document:
+                self.expand_with_snippet(abbr, 1)
+            else:
+                content = content.replace(zen_core.get_caret_placeholder(), '')
+                self.replace_content(content, self.get_insert_offset())
         self.buffer.end_user_action()
         return not not content
 
     def expand_with_abbreviation(self, window):
-        self.set_context(window)
+        self.set_context(window, True)
         self.save_selection()
-        done, self.last_expand = zen_dialog.main(self, window, self.do_expand_with_abbreviation, self.last_expand)
+        done, self.last_expand = zen_dialog.main(self, window, self.do_expand_with_abbreviation, self.last_expand, True)
+        '''
         if done:
+            if self.snippet_document:
+                self.buffer.undo()
+                self.restore_selection()
+                self.expand_with_snippet(self.last_expand, 1)
+            else:
+                self.start_edit()
+        '''
+        if done and not self.snippet_document:
             self.start_edit()
 
     #---------------------------------------------------------------------------------------
 
-    def do_wrap_with_abbreviation(self, done, abbr):
+    def _wrap_with_abbreviation(self, abbr):
+    
+        if not abbr:
+            return None
+
+        syntax = self.get_syntax()
+        profile_name = self.get_profile_name()
+
+        start_offset, end_offset = self.get_selection_range()
+        content = self.get_content()
+
+        if start_offset == end_offset:
+            rng = html_matcher.match(content, start_offset, profile_name)
+            if rng[0] is None:
+                return None
+            else:
+                start_offset, end_offset = rng
+
+        start_offset, end_offset = zen_actions.narrow_to_non_space(content, start_offset, end_offset)
+        line_bounds = zen_actions.get_line_bounds(content, start_offset)
+        padding = zen_actions.get_line_padding(content[line_bounds[0]:line_bounds[1]])
+
+        new_content = content[start_offset:end_offset]
+        return zen_core.wrap_with_abbreviation(abbr, zen_actions.unindent_text(new_content, padding), syntax, profile_name)
+
+    def do_wrap_with_abbreviation(self, done, abbr, last = False):
         self.buffer.begin_user_action()
         if done:
             self.buffer.undo()
             self.restore_selection()
-        result = zen_actions.wrap_with_abbreviation(self, abbr)
+        content = self._wrap_with_abbreviation(abbr)
+        if content:
+            if last and self.snippet_document:
+                self.expand_with_snippet(abbr, 2, content)
+            else:
+                content = content.replace(zen_core.get_caret_placeholder(), '')
+                offset_start, offset_end = self.get_selection_range()
+                self.replace_content(content, offset_start, offset_end)
         self.buffer.end_user_action()
-        return result
+        return not not content
 
     def wrap_with_abbreviation(self, window):
-        self.set_context(window)
+        self.set_context(window, True)
         self.save_selection()
-        done, self.last_wrap = zen_dialog.main(self, window, self.do_wrap_with_abbreviation, self.last_wrap)
+        done, self.last_wrap = zen_dialog.main(self, window, self.do_wrap_with_abbreviation, self.last_wrap, True)
+        '''
         if done:
-            self.start_edit()
+            if self.snippet_document:
+                self.buffer.undo()
+                self.restore_selection() # doesn't work at first call (?)
+            	self.expand_with_snippet(self.last_expand, 2, self._wrap_with_abbreviation(self.last_wrap))
+            else:
+                self.start_edit()
+        '''
+        if done and not self.snippet_document:
+        	self.start_edit()
 
     #---------------------------------------------------------------------------------------
 
@@ -503,7 +640,7 @@ class ZenEditor():
 
     #---------------------------------------------------------------------------------------
 
-    def do_lorem_ipsum(self, done, cmd):
+    def do_lorem_ipsum(self, done, cmd, last = False):
         self.buffer.begin_user_action()
         if done:
             self.buffer.undo()
@@ -517,5 +654,5 @@ class ZenEditor():
     def lorem_ipsum(self, window):
         self.set_context(window)
         self.save_selection()
-        done, self.last_lorem_ipsum = zen_dialog.main(self, window, self.do_lorem_ipsum, self.last_lorem_ipsum)
+        done, self.last_lorem_ipsum = zen_dialog.main(self, window, self.do_lorem_ipsum, self.last_lorem_ipsum, False)
 

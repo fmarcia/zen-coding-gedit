@@ -11,13 +11,14 @@ import gtk
 
 class ZenDialog():
 
-    def __init__(self, editor, x, y, callback, text=""):
+    def __init__(self, editor, x, y, callback, text, last):
 
         self.editor = editor
         self.exit = False
         self.done = False
         self.abbreviation = text
         self.callback = callback
+        self.last = last
 
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.window.set_decorated(False)
@@ -48,14 +49,18 @@ class ZenDialog():
     def key_pressed(widget, what, event):
         if event.keyval == 65293: # Return
             widget.exit = True
+            if widget.callback and widget.last:
+                widget.done = widget.callback(widget.done, widget.abbreviation, True)
             widget.quit()
         elif event.keyval == 65289: # Tab
             widget.exit = True
+            if widget.callback and widget.last:
+                widget.done = widget.callback(widget.done, widget.abbreviation, True)
             widget.quit()
         elif event.keyval == 65307: # Escape
             widget.exit = False
             if widget.callback:
-                widget.done = widget.callback(widget.done, '')
+                widget.done = widget.callback(widget.done, '', True)
             widget.quit()
         else:
             return False
@@ -77,7 +82,7 @@ class ZenDialog():
     def main(self):
         gtk.main()
 
-def main(editor, window, callback, text=""):
+def main(editor, window, callback, text = "", last = False):
 
     # ensure the caret is hidden
     editor.view.set_cursor_visible(False)
@@ -91,7 +96,7 @@ def main(editor, window, callback, text=""):
     xb, yb = editor.view.buffer_to_window_coords(gtk.TEXT_WINDOW_TEXT, location.x + location.width, location.y)
 
     # open dialog at coordinates with eventual text
-    my_zen_dialog = ZenDialog(editor, xo + xb, yo + yb, callback, text)
+    my_zen_dialog = ZenDialog(editor, xo + xb, yo + yb, callback, text, last)
     my_zen_dialog.main()
 
     # show the caret again
