@@ -328,10 +328,7 @@ class ZenEditor():
     #---------------------------------------------------------------------------------------
     
     def expand_with_snippet(self, abbr, mode = 0, content = ''):
-    	# mode:
-        # 0: expand abbr
-        # 1: expand with abbr
-        # 2: wrap with abbr
+        # mode_names = { 0: 'expand abbr',  1: 'expand with abbr', 2: 'wrap with abbr' }
 
         if mode < 2:
             content = zen_core.expand_abbreviation(abbr, self.get_syntax(), self.get_profile_name())
@@ -406,15 +403,6 @@ class ZenEditor():
         self.set_context(window, True)
         self.save_selection()
         done, self.last_expand = zen_dialog.main(self, window, self.do_expand_with_abbreviation, self.last_expand, True)
-        '''
-        if done:
-            if self.snippet_document:
-                self.buffer.undo()
-                self.restore_selection()
-                self.expand_with_snippet(self.last_expand, 1)
-            else:
-                self.start_edit()
-        '''
         if done and not self.snippet_document:
             self.start_edit()
 
@@ -465,17 +453,8 @@ class ZenEditor():
         self.set_context(window, True)
         self.save_selection()
         done, self.last_wrap = zen_dialog.main(self, window, self.do_wrap_with_abbreviation, self.last_wrap, True)
-        '''
-        if done:
-            if self.snippet_document:
-                self.buffer.undo()
-                self.restore_selection() # doesn't work at first call (?)
-            	self.expand_with_snippet(self.last_expand, 2, self._wrap_with_abbreviation(self.last_wrap))
-            else:
-                self.start_edit()
-        '''
         if done and not self.snippet_document:
-        	self.start_edit()
+            self.start_edit()
 
     #---------------------------------------------------------------------------------------
 
