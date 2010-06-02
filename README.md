@@ -3,14 +3,14 @@ Zen Coding for Gedit
 
 This plugin fully integrates [Zen Coding](http://code.google.com/p/zen-coding/) into [Gedit](http://projects.gnome.org/gedit/). With Zen Coding for Gedit, you can:
 
-- Expand abbreviation
-- Expand incrementally with abbreviation
-- Wrap incrementally with abbreviation
-- Zenify (reduce to abbreviation) (*)
-- Select inward or outward (*)
+- Expand abbreviation (*)
+- Expand incrementally with abbreviation (*)
+- Wrap incrementally with abbreviation (*)
+- Zenify (reduce to abbreviation) (**)
+- Select inward or outward (**)
 - Merge lines
-- Go to previous or next html tag (*)
-- Go to previous or next html node (*)
+- Go to previous or next html tag (**)
+- Go to previous or next html node (**)
 - Go to previous or next edit point
 - Update tag image size
 - Toggle between image url and data
@@ -18,11 +18,13 @@ This plugin fully integrates [Zen Coding](http://code.google.com/p/zen-coding/) 
 - Split or join tags
 - Toggle comment
 - Create your own abbreviations and snippets
-- Insert incrementally 'lorem ipsum' words or sentences, or random letters (**)
+- Insert incrementally 'lorem ipsum' words or sentences, or random letters (***)
 
-(*) these features use [html_navigation.py](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/html_navigation.py) instead of [zen_actions.py](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/zen_actions.py)
+(*) use snippets when available
 
-(**) see [lorem_ipsum.py](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/lorem_ipsum.py) for usage
+(**) these features use [html_navigation.py](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/html_navigation.py) instead of [zen_actions.py](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/zen_actions.py)
+
+(***) see [lorem_ipsum.py](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/lorem_ipsum.py) for usage
 
 These actions are available using keyboard shortcuts and menu items.
 
