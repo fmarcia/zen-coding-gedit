@@ -59,7 +59,6 @@ def placeholder_feed(m):
 	else:
 		return ''
 
-
 class ZenEditor():
 
 	def __init__(self, window_helper):
@@ -271,28 +270,32 @@ class ZenEditor():
 
 	#--- Snippet hook ----------------------------------------------------------
 	
-	def expand_with_snippet(self, abbr, mode = 0, content = ''):
+	def expand_with_snippet(self, abbr, mode = 0):
 		# mode_names = { 0: 'expand abbr',  1: 'expand with abbr', 2: 'wrap with abbr' }
 
 		if mode < 2:
 			content = zen_core.expand_abbreviation(abbr, self.get_syntax(), self.get_profile_name())
-		if not content:
-			return
+		else:
+			content = self.core_wrap_with_abbreviation(abbr)
 
-		global placeholder_count
-		placeholder_count = 0
-		search_string = '(' + self.placeholder + '|\{' + self.placeholder + '|>' + self.placeholder + '[^<]+<' + ')'
-		content = re.sub(search_string, placeholder_feed, content)
+		if content:
 
-		offset_start, offset_end = self.get_selection_range()
-		if offset_start == offset_end and mode == 0:
-			offset_start -= len(abbr)
+			global placeholder_count
+			placeholder_count = 0
+			search_string = '(' + self.placeholder + '|\{' + self.placeholder + '|>' + self.placeholder + '[^<]+<' + ')'
+			content = re.sub(search_string, placeholder_feed, content)
 
-		snippet = ZenSnippet(abbr, content)
-		iter_start = self.buffer.get_iter_at_offset(offset_start)
-		iter_end = self.buffer.get_iter_at_offset(offset_end)
+			offset_start, offset_end = self.get_selection_range()
+			if offset_start == offset_end and mode == 0:
+				offset_start -= len(abbr)
 
-		self.snippet_document.apply_snippet(snippet, iter_start, iter_end)
+			snippet = ZenSnippet(abbr, content)
+			iter_start = self.buffer.get_iter_at_offset(offset_start)
+			iter_end = self.buffer.get_iter_at_offset(offset_end)
+
+			self.snippet_document.apply_snippet(snippet, iter_start, iter_end)
+		
+		return content
 
 	#--- Expand abbreviation ---------------------------------------------------
 
@@ -308,9 +311,9 @@ class ZenEditor():
 		else:
 		
 			self.buffer.begin_user_action()
-			result = zen_actions.expand_abbreviation(self)
-			#TODO: filter explicit placerholders
-			if result:
+			content = zen_actions.expand_abbreviation(self)
+			#TODO: filter placeholders and explicit placeholders $0 ou ${1:xxx}
+			if content:
 				self.start_edit()
 			self.buffer.end_user_action()
 
@@ -326,16 +329,16 @@ class ZenEditor():
 			self.buffer.undo()
 			self.restore_selection()
 
-		content = zen_core.expand_abbreviation(abbr, self.get_syntax(), self.get_profile_name())
+		if last and self.snippet_document:
+			content = self.expand_with_snippet(abbr, 1)
 
-		if content:
+		else:
 
-			if last and self.snippet_document:
-				self.expand_with_snippet(abbr, 1)
+			content = zen_core.expand_abbreviation(abbr, self.get_syntax(), self.get_profile_name())
 
-			else:
-				content = content.replace(zen_core.get_caret_placeholder(), '')
-				#TODO: filter explicit placeholders
+			if content:
+				content = content.replace(self.placeholder, '')
+				content = re.sub('\$\d+|\$\{\d+:[^\}]*\}', '', content)
 				self.replace_content(content, self.get_insert_offset())
 
 		self.buffer.end_user_action()
@@ -388,15 +391,16 @@ class ZenEditor():
 		if done:
 			self.buffer.undo()
 			self.restore_selection()
-		content = self.core_wrap_with_abbreviation(abbr)
 
-		if content:
+		if last and self.snippet_document:
+			content = self.expand_with_snippet(abbr, 2)
 
-			if last and self.snippet_document:
-				self.expand_with_snippet(abbr, 2, content)
+		else:
 
-			else:
-				content = content.replace(zen_core.get_caret_placeholder(), '')
+			content = self.core_wrap_with_abbreviation(abbr)
+
+			if content:
+				content = content.replace(self.placeholder, '')
 				#TODO: filter explicit placeholders
 				offset_start, offset_end = self.get_selection_range()
 				self.replace_content(content, offset_start, offset_end)
