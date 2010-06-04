@@ -24,6 +24,13 @@ import zen_dialog
 from html_navigation import HtmlNavigation
 from lorem_ipsum import lorem_ipsum
 
+try:
+	sys.path.append('/usr/lib/gedit-2/plugins')
+	from snippets.Document import Document as SnippetDocument
+	USE_SNIPPETS = True
+except:
+	USE_SNIPPETS = False
+
 class ZenSnippet():
 
 	def __init__(self, abbreviation, content):
@@ -92,7 +99,7 @@ class ZenEditor():
 		if self.document:
 			zen_core.set_variable('charset', self.document.get_encoding().get_charset())
 		
-		self.view = view #self.window.get_active_view()
+		self.view = view
 		if self.view:
 			self.buffer = self.view.get_buffer()
 			if self.view.get_insert_spaces_instead_of_tabs():
@@ -102,13 +109,11 @@ class ZenEditor():
 		
 		#zen_core.set_newline(???)
 		
-		if self.view and not (self.view in self.snippet_document):
-			try:
-				sys.path.append('/usr/lib/gedit-2/plugins')
-				from snippets.Document import Document
-				self.snippet_document[self.view] = Document(None, self.view)
-			except:
-				self.snippet_document[self.view] = None
+		if USE_SNIPPETS and self.view:
+			if not (self.view in self.snippet_document):
+				self.snippet_document[self.view] = SnippetDocument(None, self.view)
+		else:
+			self.snippet_document[self.view] = None
 
 	def get_selection_range(self):
 
