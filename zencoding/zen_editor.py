@@ -312,7 +312,7 @@ class ZenEditor():
 		
 			self.buffer.begin_user_action()
 			content = zen_actions.expand_abbreviation(self)
-			#TODO: filter placeholders and explicit placeholders $0 ou ${1:xxx}
+			content = re.sub('\$\d+|\$\{\d+:[^\}]*\}', '', content)
 			if content:
 				self.start_edit()
 			self.buffer.end_user_action()
@@ -401,7 +401,7 @@ class ZenEditor():
 
 			if content:
 				content = content.replace(self.placeholder, '')
-				#TODO: filter explicit placeholders
+				content = re.sub('\$\d+|\$\{\d+:[^\}]*\}', '', content)
 				offset_start, offset_end = self.get_selection_range()
 				self.replace_content(content, offset_start, offset_end)
 
