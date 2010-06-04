@@ -110,7 +110,7 @@ class ZenCodingWindowHelper():
 		self.window.set_data("ZenCodingPluginInfo", windowdata)
 
 		# zen coding
-		self.editor = ZenEditor(self)
+		self.editor = ZenEditor(self.window)
 		error = self.editor.get_user_settings_error()
 		if error:
 			md = gtk.MessageDialog(self.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR,
@@ -143,7 +143,7 @@ class ZenCodingWindowHelper():
 		windowdata["action_group"].set_sensitive(bool(view and view.get_editable()))
 		
 		# the content changed
-		self.editor.set_context()
+		self.editor.set_context(view)
 
 	# Menu handlers
 

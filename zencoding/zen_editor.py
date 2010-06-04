@@ -61,9 +61,9 @@ def placeholder_feed(m):
 
 class ZenEditor():
 
-	def __init__(self, window_helper):
+	def __init__(self, window):
 
-		self.window = window_helper.window
+		self.window = window
 
 		default_locale = locale.getdefaultlocale()[0]
 		if default_locale:
@@ -82,21 +82,19 @@ class ZenEditor():
 		self.placeholder = zen_core.get_caret_placeholder()
 
 		self.html_navigation = None
-		self.snippet_document = None
+		self.snippet_document = {}
 
 	# --- Original interface ---------------------------------------------------
 
-	def set_context(self):
+	def set_context(self, view):
 
 		self.document = self.window.get_active_document()
-		self.view = self.window.get_active_view()
-		if self.view:
-			self.buffer = self.view.get_buffer()
-		
 		if self.document:
 			zen_core.set_variable('charset', self.document.get_encoding().get_charset())
 		
+		self.view = view #self.window.get_active_view()
 		if self.view:
+			self.buffer = self.view.get_buffer()
 			if self.view.get_insert_spaces_instead_of_tabs():
 				zen_core.set_variable('indentation', " " * self.view.get_tab_width())
 			else:
@@ -104,15 +102,14 @@ class ZenEditor():
 		
 		#zen_core.set_newline(???)
 		
-		if self.document:
-			if not self.snippet_document:
-				try:
-					sys.path.append('/usr/lib/gedit-2/plugins')
-					from snippets.Document import Document
-					self.snippet_document = Document(None, self.view)
-				except:
-					self.snippet_document = None
-		
+		if self.view and not (self.view in self.snippet_document):
+			try:
+				sys.path.append('/usr/lib/gedit-2/plugins')
+				from snippets.Document import Document
+				self.snippet_document[self.view] = Document(None, self.view)
+			except:
+				self.snippet_document[self.view] = None
+
 	def get_selection_range(self):
 
 		offset_start = self.get_insert_offset()
@@ -293,7 +290,7 @@ class ZenEditor():
 			iter_start = self.buffer.get_iter_at_offset(offset_start)
 			iter_end = self.buffer.get_iter_at_offset(offset_end)
 
-			self.snippet_document.apply_snippet(snippet, iter_start, iter_end)
+			self.snippet_document[self.view].apply_snippet(snippet, iter_start, iter_end)
 		
 		return content
 
@@ -303,19 +300,23 @@ class ZenEditor():
 
 		zen_core.set_caret_placeholder(self.placeholder)
 		
-		if self.snippet_document:
-			abbr = zen_actions.find_abbreviation(self)
-			if abbr:
+		abbr = zen_actions.find_abbreviation(self)
+
+		if abbr:
+
+			if self.snippet_document[self.view]:
 				self.expand_with_snippet(abbr)
 
-		else:
-		
-			self.buffer.begin_user_action()
-			content = zen_actions.expand_abbreviation(self)
-			content = re.sub('\$\d+|\$\{\d+:[^\}]*\}', '', content)
-			if content:
-				self.start_edit()
-			self.buffer.end_user_action()
+			else:
+				self.buffer.begin_user_action()
+				content = zen_core.expand_abbreviation(abbr, self.get_syntax(), self.get_profile_name())
+				if content:
+					content = content.replace(self.placeholder, '')
+					content = re.sub('\$\d+|\$\{\d+:[^\}]*\}', '', content)
+					unused, offset_end = self.get_selection_range()
+					self.replace_content(content, offset_end - len(abbr), offset_end)
+					self.start_edit()
+				self.buffer.end_user_action()
 
 		zen_core.set_caret_placeholder('')
 
@@ -329,7 +330,7 @@ class ZenEditor():
 			self.buffer.undo()
 			self.restore_selection()
 
-		if last and self.snippet_document:
+		if last and self.snippet_document[self.view]:
 			content = self.expand_with_snippet(abbr, 1)
 
 		else:
@@ -352,7 +353,7 @@ class ZenEditor():
 
 		done, self.last_expand = zen_dialog.main(self, self.window, self.callback_expand_with_abbreviation, self.last_expand, True)
 
-		if done and not self.snippet_document:
+		if done and not self.snippet_document[self.view]:
 			self.start_edit()
 
 		zen_core.set_caret_placeholder('')
@@ -392,7 +393,7 @@ class ZenEditor():
 			self.buffer.undo()
 			self.restore_selection()
 
-		if last and self.snippet_document:
+		if last and self.snippet_document[self.view]:
 			content = self.expand_with_snippet(abbr, 2)
 
 		else:
@@ -416,7 +417,7 @@ class ZenEditor():
 
 		done, self.last_wrap = zen_dialog.main(self, self.window, self.callback_wrap_with_abbreviation, self.last_wrap, True)
 
-		if done and not self.snippet_document:
+		if done and not self.snippet_document[self.view]:
 			self.start_edit()
 
 		zen_core.set_caret_placeholder('')
