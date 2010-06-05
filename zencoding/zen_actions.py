@@ -248,7 +248,7 @@ def find_new_edit_point(editor, inc=1, offset=0):
 	"""
 	cur_point = editor.get_caret_pos() + offset
 	content = editor.get_content()
-	syntax = editor.get_syntax()
+	syntax = editor.get_syntax() # (FM) needed to differentiate CSS
 	max_len = len(content)
 	next_point = -1
 	re_empty_line = r'^\s+$'

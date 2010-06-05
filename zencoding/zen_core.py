@@ -234,7 +234,7 @@ def get_elements_collection(resource, type):
 	else:
 		return {}
 	
-def replace_variables(text): # (FM) allow dynamic variables
+def replace_variables(text): # (FM) use dynamic variables
 	"""
 	Replace variables like ${var} in string
 	@param text: str
@@ -264,7 +264,7 @@ def get_snippet(res_type, snippet_name):
 	"""
 	return get_settings_resource(res_type, snippet_name, 'snippets');
 
-def get_variable(name): # (FM) allow dynamic variables
+def get_variable(name): # (FM) variable can be missing
 	"""
 	Returns variable value
 	 @return: str

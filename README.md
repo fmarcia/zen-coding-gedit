@@ -7,26 +7,24 @@ This plugin fully integrates [Zen Coding](http://code.google.com/p/zen-coding/) 
 - Expand incrementally with abbreviation (*)
 - Wrap incrementally with abbreviation (*)
 - Zenify (reduce to abbreviation) (**)
+- Insert incrementally 'lorem ipsum' words or sentences, or random letters (***)
 - Select inward or outward (**)
-- Merge lines
 - Go to previous or next html tag (**)
 - Go to previous or next html node (**)
 - Go to previous or next edit point
 - Update tag image size
 - Toggle between image url and data
+- Merge lines
 - Remove tag
 - Split or join tags
 - Toggle comment
 - Create your own abbreviations and snippets
-- Insert incrementally 'lorem ipsum' words or sentences, or random letters (***)
 
 (*) use snippets when available
 
 (**) these features use [html_navigation.py](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/html_navigation.py) instead of [zen_actions.py](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/zen_actions.py)
 
 (***) see [lorem_ipsum.py](http://github.com/fmarcia/zen-coding-gedit/blob/master/zencoding/lorem_ipsum.py) for usage
-
-These actions are available using keyboard shortcuts and menu items.
 
 Installation
 ------------

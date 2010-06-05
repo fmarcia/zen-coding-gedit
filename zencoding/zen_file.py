@@ -16,7 +16,7 @@ def read(path):
 	fp.close()
 	return content
 
-def locate_file(editor_file, file_name):
+def locate_file(editor_file, file_name): # (FM) infinite loop fix
 	"""
 	Locate <code>file_name</code> file that relates to <code>editor_file</code>.
 	File name may be absolute or relative path
