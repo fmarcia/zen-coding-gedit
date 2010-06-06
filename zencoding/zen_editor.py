@@ -72,16 +72,6 @@ class ZenEditor():
 
 		self.window = window
 
-		default_locale = locale.getdefaultlocale()[0]
-		if default_locale:
-			lang = re.sub(r'_[^_]+$', '', default_locale)
-			if lang != default_locale:
-				zen_core.set_variable('lang', lang)
-				zen_core.set_variable('locale', default_locale.replace('_', '-'))
-			else:
-				zen_core.set_variable('lang', default_locale)
-				zen_core.set_variable('locale', default_locale)
-		
 		self.last_wrap = ''
 		self.last_expand = ''
 		self.last_lorem_ipsum = 'list 5*5'
@@ -95,6 +85,16 @@ class ZenEditor():
 
 	def set_context(self, view):
 
+		default_locale = locale.getdefaultlocale()[0]
+		if default_locale:
+			lang = re.sub(r'_[^_]+$', '', default_locale)
+			if lang != default_locale:
+				zen_core.set_variable('lang', lang)
+				zen_core.set_variable('locale', default_locale.replace('_', '-'))
+			else:
+				zen_core.set_variable('lang', default_locale)
+				zen_core.set_variable('locale', default_locale)
+		
 		self.document = self.window.get_active_document()
 		if self.document:
 			zen_core.set_variable('charset', self.document.get_encoding().get_charset())
@@ -107,13 +107,13 @@ class ZenEditor():
 			else:
 				zen_core.set_variable('indentation', "\t")
 		
-		#zen_core.set_newline(???)
+			#zen_core.set_newline(???)
 		
-		if USE_SNIPPETS and self.view:
-			if not (self.view in self.snippet_document):
-				self.snippet_document[self.view] = SnippetDocument(None, self.view)
-		else:
-			self.snippet_document[self.view] = None
+			if USE_SNIPPETS:
+				if not (self.view in self.snippet_document):
+					self.snippet_document[self.view] = SnippetDocument(None, self.view)
+			else:
+				self.snippet_document[self.view] = None
 
 	def get_selection_range(self):
 

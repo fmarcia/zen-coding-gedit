@@ -134,9 +134,6 @@ class ZenCodingWindowHelper():
 		windowdata = self.window.get_data("ZenCodingPluginDataKey")
 		windowdata["action_group"].set_sensitive(bool(view and view.get_editable()))
 		
-		# the content changed
-		self.editor.set_context(view)
-		
 		# user settings
 		modified = os.path.getmtime(os.path.join(os.path.dirname(__file__), 'my_zen_settings.py'))
 		if modified != self.modified:
@@ -155,6 +152,9 @@ class ZenCodingWindowHelper():
 				globals()['zen_core'].zen_settings = globals()['stparser'].get_settings(my_zen_settings.my_zen_settings)
 			self.modified = modified
 
+		# the content changed
+		self.editor.set_context(view)
+		
 	# Menu handlers
 
 	def expand_abbreviation(self, action):
