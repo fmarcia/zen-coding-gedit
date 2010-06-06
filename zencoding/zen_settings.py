@@ -44,7 +44,8 @@ zen_settings = {
 			"r:a": "right:auto;",
 			"b": "bottom:|;",
 			"b:a": "bottom:auto;",
-			"brad": "-webkit-border-radius: ${1:radius};\n-moz-border-radius: $1;\n-ms-border-radius: $1;\nborder-radius: $1;$0",
+			"brad": "-webkit-border-radius: ${1:radius};\n-moz-border-radius: $1;\n-ms-border-radius: $1;\nborder-radius: $1;",
+			"bsha": "-webkit-box-shadow: ${1:hoff} ${2:voff} ${3:blur} ${4:rgba(0,0,0,0.5)};\n-moz-box-shadow: $1 $2 $3 $4;\n-ms-box-shadow: $1 $2 $3 $4;\nbox-shadow: $1 $2 $3 $4;",
 			"l": "left:|;",
 			"l:a": "left:auto;",
 			"z": "z-index:|;",
@@ -737,22 +738,4 @@ zen_settings = {
 		'extends': 'html'
 	}
 }
-
-# merge standard settings with user settings
-try:
-	from my_zen_settings import my_zen_settings
-except Exception as error:
-	zen_settings['variables']['user_settings_error'] = {
-	    'msg': error.msg,
-	    'lineno': error.lineno,
-	    'offset': error.offset,
-	    'text': error.text.replace(r'"', r'\"')
-	}
-else:
-	for lang in zen_settings:
-		if lang in my_zen_settings:
-			if 'snippets' in zen_settings[lang] and 'snippets' in my_zen_settings[lang]:
-				zen_settings[lang]['snippets'].update(my_zen_settings[lang]['snippets'])
-			if 'abbreviations' in zen_settings[lang] and 'abbreviations' in my_zen_settings[lang]:
-				zen_settings[lang]['abbreviations'].update(my_zen_settings[lang]['abbreviations'])
 

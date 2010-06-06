@@ -110,16 +110,8 @@ class ZenCodingWindowHelper():
 		self.window.set_data("ZenCodingPluginInfo", windowdata)
 
 		# zen coding
+		self.modified = None
 		self.editor = ZenEditor(self.window)
-		error = self.editor.get_user_settings_error()
-		if error:
-			md = gtk.MessageDialog(self.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR,
-				gtk.BUTTONS_CLOSE, "There is an error in user settings:")
-			message = "{0} on line {1} at character {2}\n\nUser settings will not be available."
-			md.set_title("Zen Coding error")
-			md.format_secondary_text(message.format(error['msg'], error['lineno'], error['offset']))
-			md.run()
-			md.destroy()
 
 	def deactivate(self):
 
@@ -144,6 +136,24 @@ class ZenCodingWindowHelper():
 		
 		# the content changed
 		self.editor.set_context(view)
+		
+		# user settings
+		modified = os.path.getmtime(os.path.join(os.path.dirname(__file__), 'my_zen_settings.py'))
+		if modified != self.modified:
+			try:
+				import my_zen_settings
+				reload(my_zen_settings)
+			except Exception as error:
+				md = gtk.MessageDialog(self.window, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR,
+					gtk.BUTTONS_CLOSE, "An error occured in user settings:")
+				message = "{0} on line {1} at character {2}\n\nUser settings will not be available."
+				md.set_title("Zen Coding error")
+				md.format_secondary_text(message.format(error.msg, error.lineno, error.offset))
+				md.run()
+				md.destroy()
+			else:
+				globals()['zen_core'].zen_settings = globals()['stparser'].get_settings(my_zen_settings.my_zen_settings)
+			self.modified = modified
 
 	# Menu handlers
 
