@@ -98,6 +98,8 @@ class ZenEditor():
 		self.document = self.window.get_active_document()
 		if self.document:
 			zen_core.set_variable('charset', self.document.get_encoding().get_charset())
+			
+		zen_core.set_caret_placeholder('')
 		
 		self.view = view
 		if self.view:
