@@ -77,6 +77,7 @@ class ZenEditor():
 		self.last_lorem_ipsum = 'list 5*5'
 
 		self.placeholder = zen_core.get_caret_placeholder()
+		zen_core.set_caret_placeholder('')		
 
 		self.html_navigation = None
 		self.snippet_document = {}
@@ -99,8 +100,6 @@ class ZenEditor():
 		if self.document:
 			zen_core.set_variable('charset', self.document.get_encoding().get_charset())
 			
-		zen_core.set_caret_placeholder('')
-		
 		self.view = view
 		if self.view:
 			self.buffer = self.view.get_buffer()
